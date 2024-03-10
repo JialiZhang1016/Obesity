@@ -6,7 +6,8 @@ This document outlines the proposal for a data analysis project conducted as par
 - **Maddie Perez**
 - **Jarrad Botchway**
 
-The project will involve comprehensive data analysis employing various statistical methods to extract meaningful insights and conclusions from the provided dataset. The following sections will detail the specific analyses proposed and the expected outcomes of this collaborative effort.
+The project will involve comprehensive data analysis employing various statistical methods to extract meaningful insights and conclusions from the provided dataset. The following sections will detail the specific analyses proposed and the expected outcomes of this collaborative effort. For further details on our project's scope, methodologies, and updates, please visit our project repository on GitHub: [Obesity Project Repository](https://github.com/JialiZhang1016/Obesity/tree/main).
+To directly access the dataset we are analyzing, you can visit the following link: [Obesity Dataset](https://github.com/JialiZhang1016/Obesity/blob/main/ObesityDataSet_raw_and_data_sinthetic.csv).
 
 ## 1. Problem background and importance
 
