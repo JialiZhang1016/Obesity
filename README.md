@@ -1,10 +1,10 @@
-# Obesity
+# Obesity dataset
 
-This is dataset analysis project for STAT 6545.
+This is data analysis project for STAT 6545.
 
-# description
+## 1. Problem background and importance
 
-# varibale
+## 2. Variables
 
-# Method
+## 3. Method
 
