@@ -13,7 +13,9 @@ For further details on our project's scope, methodologies, and updates, please v
 To directly access the dataset we are analyzing, you can visit the following link: [Obesity Dataset](https://github.com/JialiZhang1016/Obesity/blob/main/ObesityDataSet_raw_and_data_sinthetic.csv).
 
 ## 1. Problem background and importance
-
+Obesity is a growing and widespread issue, that has been proven to be an important risk factor for health conditions, such as heart diceases, hypertension and cancer. This affections often necessitate lifelong treatments and, in some cases, lead to early death. Being able to predict which habits are most likely to lead to obesity, and their importance, would be benefitial to both the patients suffering from obesity, as well as the general population. 
+It would allow the patients to identify the areas where they can make changes and estimate how impactful these modifications can be. When it comes to the general population, the benefits would be even greater: they would be able to estimate if their habits are likely to lead to obesity and at what level; enabling them to take on new habits before their health becomes concerning.
+In the end, the overall stake is to avoid patients to suffer from non-reversible health conditions.
 ## 2. Variables
 
 ## 3. Method
