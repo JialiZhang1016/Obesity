@@ -1,6 +1,6 @@
 # Obesity Dataset Analysis Project for STAT 6545
 
-This document outlines the proposal for a data analysis project conducted as a final project for STAT 6545. Below are the names of the team members who will collaboratively work on this project:
+This document outlines the proposal for a data analysis project conducted as a final project for **STAT 6545**. Below are the names of the team members who will collaboratively work on this project:
 
 - **Jiali Zhang**
 - **Maddie Perez**
