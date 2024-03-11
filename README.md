@@ -34,7 +34,9 @@ Apply Cluster Analysis to group individuals based on their lifestyle and health 
 Perform Correlation Analysis to identify relationships between lifestyle factors and obesity measures. Determine which lifestyle factors are closely linked to obesity, guiding preventive strategies and further research.
 
 **d. Prediction or classification:**
+
 Build a Multivariate Regression linear model to predict obesity level (Insufficient Weight, Normal Weight, Overweight Level I, Overweight Level II, Obesity Type I, Obesity Type II and Obesity Type III) based on the lifestyle and health factors identified as most significant. The significance and relative value for each linear coefficient will provide information on each factors their relative impact on the response variable (obesity level).
 
 **e. Hypothesis construction and testing:**
+
 Use one-way MANOVA to test if some obesity levels share the same mean results and could be combine into one single category (test for mean equality and consider confidence intervals), test if and which lifestyle and health factors interaction have a significant impact on obesity level and which are additive, test if there is a statistically significant difference in obesity level depending on lifestyle and health factors.
