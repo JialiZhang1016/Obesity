@@ -10,8 +10,9 @@ The project will involve comprehensive data analysis employing various statistic
 
 For further details on our project's scope, methodologies, and updates, please visit our project repository on GitHub: [GitHub Repository: Red Wine Quality](https://github.com/JialiZhang1016/Wine)
 
-To directly access the dataset we are analyzing, you can visit the following link:
+To directly access the dataset we are analyzing, you can visit the following links (they are the same dataset, just different sources):
 - [Wine Dataset on Kaggle](https://www.kaggle.com/datasets/uciml/red-wine-quality-cortez-et-al-2009)
+- [Wine Dataset in UCI machine learning repo](https://archive.ics.uci.edu/dataset/186/wine+quality)
 - [Wine Dataset in our repo](https://github.com/JialiZhang1016/Wine/blob/main/winequality-red.csv)
   
 ## 1. Problem background and importance (Need to change, Maddie)
