@@ -6,11 +6,11 @@ This document outlines the proposal for a data analysis project conducted as a f
 - **Maddie Perez**
 - **Jarrad Botchway**
 
-The project will involve comprehensive data analysis employing various statistical methods to extract meaningful insights and conclusions from the provided dataset. The following sections will detail the specific analyses proposed and the expected outcomes of this collaborative effort. 
+The project will involve comprehensive data analysis employing various statistical methods to extract meaningful insights and conclusions from the provided dataset. The following sections will detail the specific analyses proposed and the expected outcomes of this collaborative effort.
 
-For further details on our project's scope, methodologies, and updates, please visit our project repository on GitHub: 
+For further details on our project's scope, methodologies, and updates, please visit our project repository on GitHub: [GitHub Repository](https://github.com/JialiZhang1016/Wine)
 
-To directly access the dataset we are analyzing, you can visit the following link: 
+To directly access the dataset we are analyzing, you can visit the following link: [Wine Dataset on Kaggle](https://www.kaggle.com/datasets/uciml/red-wine-quality-cortez-et-al-2009)
 
 ## 1. Problem background and importance
 Obesity is a growing and widespread issue, that has been proven to be an important risk factor for health conditions, such as heart diceases, hypertension and cancer. This affections often necessitate lifelong treatments and, in some cases, lead to early death. Being able to predict which habits are most likely to lead to obesity, and their importance, would be benefitial to both the patients suffering from obesity, as well as the general population. 
