@@ -15,11 +15,10 @@ To directly access the dataset we are analyzing, you can visit the following lin
 - [Wine Dataset in UCI machine learning repo](https://archive.ics.uci.edu/dataset/186/wine+quality)
 - [Wine Dataset in our repo](https://github.com/JialiZhang1016/Wine/blob/main/winequality-red.csv)
   
-## 1. Problem background and importance (Need to change, Maddie)
-Obesity is a growing and widespread issue, that has been proven to be an important risk factor for health conditions, such as heart diceases, hypertension and cancer. This affections often necessitate lifelong treatments and, in some cases, lead to early death. Being able to predict which habits are most likely to lead to obesity, and their importance, would be benefitial to both the patients suffering from obesity, as well as the general population. 
-It would allow the patients to identify the areas where they can make changes and estimate how impactful these modifications can be. When it comes to the general population, the benefits would be even greater: they would be able to estimate if their habits are likely to lead to obesity and at what level; enabling them to take on new habits before their health becomes concerning. 
-We will also be able to detect if a person is underweight, which can be linked to equally damaging health issues. However, we will not be able to offer a more nuanced diagnostic (give levels) in that case.
-In the end, the overall stake is to avoid patients to suffer from non-reversible health conditions.
+## 1. Problem background and importance 
+Wine is a product that can vary in price and in quality ; some varieties are akin to cheap consummers goods while others are luxury products. In that context, it can be hard for consummers to identify which are more appropriate for certain occasions, or which are worth spending more or less money on ; similarly, for producers, the task of setting up a price can be made harder. 
+On both sides, certifications are very important and thus, there is a real need to build trustworthy models to evaluate wines quality: it would bring clarity to consumers and recognition to producers. Moreover, by identifying the most important factors, the latter could turn their focus on these aspects and find more efficient ways to improve their wine's rating. 
+
 
 ## 2. Variables (Need to change, Jarrad)
 This project leverages a comprehensive public dataset to examine obesity levels across individuals from Mexico, Peru, and Colombia. The data was meticulously gathered through an online survey platform, where participants anonymously responded to 16 meticulously designed questions focused on their dietary habits and physical health. The dataset encapsulates responses from individuals aged between 14 and 51 years, resulting in a rich compilation of 2,111 records spanning 17 distinct variables. Each variable offers valuable insights into factors that potentially influence obesity levels:
@@ -57,8 +56,8 @@ This dataset provides a multidimensional view into the lifestyle and health fact
 
 **d. Prediction or classification:**
 
-Build a Multivariate Regression linear model to predict obesity level (Insufficient Weight, Normal Weight, Overweight Level I, Overweight Level II, Obesity Type I, Obesity Type II and Obesity Type III) based on the lifestyle and health factors identified as most significant. The significance and relative value for each linear coefficient will provide information on each factors their relative impact on the response variable (obesity level).
+Build a Multivariate Regression linear model to predict wines' quality scores based on their chemical properties. The significance and relative value for each linear coefficient will provide information on each factors' relative impact on the response variable (quality score).
 
 **e. Hypothesis construction and testing:**
 
-Use one-way MANOVA to test if some obesity levels share the same mean results and could be combine into one single category (test for mean equality and consider confidence intervals), test if and which lifestyle and health factors interaction have a significant impact on obesity level and which are additive, test if there is a statistically significant difference in obesity level depending on lifestyle and health factors.
+Use one-way MANOVA to test if some quality score share the same mean results (which could be due to different graders giving different scores to wines that share the same properties) and could be combine into one single category (test for mean equality and consider confidence intervals). Test if (and which) chemical properties interacts in a way that has a significant impact on quality score, if not, test if they are additive. Finally, test if there is a statistically significant difference in quality score depending on chemical properties.
