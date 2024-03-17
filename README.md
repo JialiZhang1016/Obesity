@@ -8,17 +8,17 @@ This document outlines the proposal for a data analysis project conducted as a f
 
 The project will involve comprehensive data analysis employing various statistical methods to extract meaningful insights and conclusions from the provided dataset. The following sections will detail the specific analyses proposed and the expected outcomes of this collaborative effort.
 
-For further details on our project's scope, methodologies, and updates, please visit our project repository on GitHub: [GitHub Repository](https://github.com/JialiZhang1016/Wine)
+For further details on our project's scope, methodologies, and updates, please visit our project repository on GitHub: [GitHub Repository: Red Wine Quality](https://github.com/JialiZhang1016/Wine)
 
 To directly access the dataset we are analyzing, you can visit the following link: [Wine Dataset on Kaggle](https://www.kaggle.com/datasets/uciml/red-wine-quality-cortez-et-al-2009)
 
-## 1. Problem background and importance
+## 1. Problem background and importance (Need to change, Maddie)
 Obesity is a growing and widespread issue, that has been proven to be an important risk factor for health conditions, such as heart diceases, hypertension and cancer. This affections often necessitate lifelong treatments and, in some cases, lead to early death. Being able to predict which habits are most likely to lead to obesity, and their importance, would be benefitial to both the patients suffering from obesity, as well as the general population. 
 It would allow the patients to identify the areas where they can make changes and estimate how impactful these modifications can be. When it comes to the general population, the benefits would be even greater: they would be able to estimate if their habits are likely to lead to obesity and at what level; enabling them to take on new habits before their health becomes concerning. 
 We will also be able to detect if a person is underweight, which can be linked to equally damaging health issues. However, we will not be able to offer a more nuanced diagnostic (give levels) in that case.
 In the end, the overall stake is to avoid patients to suffer from non-reversible health conditions.
 
-## 2. Variables
+## 2. Variables (Need to change, Jarrad)
 This project leverages a comprehensive public dataset to examine obesity levels across individuals from Mexico, Peru, and Colombia. The data was meticulously gathered through an online survey platform, where participants anonymously responded to 16 meticulously designed questions focused on their dietary habits and physical health. The dataset encapsulates responses from individuals aged between 14 and 51 years, resulting in a rich compilation of 2,111 records spanning 17 distinct variables. Each variable offers valuable insights into factors that potentially influence obesity levels:
 
 1. **Gender**: Categorical variable indicating the participant's biological sex (Male or Female).
@@ -41,19 +41,16 @@ This project leverages a comprehensive public dataset to examine obesity levels 
 
 This dataset provides a multidimensional view into the lifestyle and health factors that contribute to obesity, making it a valuable resource for identifying potential interventions and promoting healthier communities.
 
-## 3. Method
+## 3. Method (Need to change, Jiali, Maddie)
 
 **a. Data Reduction or Structural Simplification:**
 
-Use Principal Component Analysis (PCA) to reduce the dataset's dimensions, focusing on numerical variables like Age, Height, and Weight, to identify the key factors that explain the most variance. Understand which variables are the most significant in explaining obesity variations, reducing data complexity for further analysis.
 
 **b. Grouping or Discrimination:**
 
-Apply Cluster Analysis to group individuals based on their lifestyle and health data, identifying patterns related to obesity risk. Discover distinct lifestyle patterns that correlate with different obesity levels, offering insights for targeted health interventions.
 
 **c. Dependence Investigation:**
 
-Perform Correlation Analysis to identify relationships between lifestyle factors and obesity measures. Determine which lifestyle factors are closely linked to obesity, guiding preventive strategies and further research.
 
 **d. Prediction or classification:**
 
