@@ -8,11 +8,9 @@ This document outlines the proposal for a data analysis project conducted as a f
 
 The project will involve comprehensive data analysis employing various statistical methods to extract meaningful insights and conclusions from the provided dataset. The following sections will detail the specific analyses proposed and the expected outcomes of this collaborative effort.
 
-For further details on our project's scope, methodologies, and updates, please visit our project repository on GitHub: [GitHub Repository: Red Wine Quality](https://github.com/JialiZhang1016/Wine)
-
 To directly access the dataset we are analyzing, you can visit [Wine Dataset in our GitHub Repository](https://github.com/JialiZhang1016/Wine/blob/main/winequality.csv).
 
-For reference, the dataset originates from the following citation: Cortez, Paulo, Cerdeira, A., Almeida, F., Matos, T., & Reis, J. (2009). Wine Quality. UCI Machine Learning Repository. [https://doi.org/10.24432/C56S3T](https://doi.org/10.24432/C56S3T). 
+For reference, the dataset originates from the following citation: Cortez, Paulo, Cerdeira, A., Almeida, F., Matos, T., & Reis, J. (2009). Wine Quality. UCI Machine Learning Repository. [https://doi.org/10.24432/C56S3T](https://doi.org/10.24432/C56S3T).
   
 ## 1. Problem background and importance 
 Wine is a product that can vary in price and in quality ; some varieties are akin to cheap consummers goods while others are luxury products. In that context, it can be hard for consummers to identify which are more appropriate for certain occasions, or which are worth spending more or less money on ; similarly, for producers, the task of setting up a price can be made harder. 
