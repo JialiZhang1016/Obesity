@@ -8,10 +8,21 @@ This document outlines the proposal for a data analysis project conducted as a f
 
 The project will involve comprehensive data analysis employing various statistical methods to extract meaningful insights and conclusions from the provided dataset. The following sections will detail the specific analyses proposed and the expected outcomes of this collaborative effort.
 
-To directly access the dataset we are analyzing, you can visit [Wine Dataset in our GitHub Repository](https://github.com/JialiZhang1016/Wine/blob/main/winequality.csv).
+To directly access the dataset we are analyzing, you can visit [Wine Dataset in our GitHub Repository](https://github.com/JialiZhang1016/Wine/blob/main/wine.csv).
 
 For reference, the dataset originates from the following citation: Cortez, Paulo, Cerdeira, A., Almeida, F., Matos, T., & Reis, J. (2009). Wine Quality. UCI Machine Learning Repository. [https://doi.org/10.24432/C56S3T](https://doi.org/10.24432/C56S3T).
-  
+We use the following code to combine the 2 dataset toghter.
+···{R}
+red_wine <- read.csv("winequality-red.csv", sep = ";") 
+white_wine <- read.csv("winequality-white.csv", sep = ";")
+
+red_wine$wine_type <- 'red'
+white_wine$wine_type <- 'white'
+
+combined_wine <- rbind(red_wine, white_wine)
+write.csv(combined_wine, "wine.csv", row.names = FALSE)
+···
+
 ## 1. Problem background and importance 
 Wine is a product that can vary in price and in quality ; some varieties are akin to cheap consummers goods while others are luxury products. In that context, it can be hard for consummers to identify which are more appropriate for certain occasions, or which are worth spending more or less money on ; similarly, for producers, the task of setting up a price can be made harder. 
 On both sides, certifications are very important and thus, there is a real need to build trustworthy models to evaluate wines quality: it would bring clarity to consumers and recognition to producers. Moreover, by identifying the most important factors, the latter could turn their focus on these aspects and find more efficient ways to improve their wine's rating. 
