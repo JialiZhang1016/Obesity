@@ -58,16 +58,21 @@ This project leverages a comprehensive public dataset to examine obesity levels 
 
 This dataset provides a multidimensional view into the lifestyle and health factors that contribute to obesity, making it a valuable resource for identifying potential interventions and promoting healthier communities.
 
-## 3. Method (Need to change, Jiali, Maddie)
+## 3. Multivariate Statistical Methods
+
+In our analysis of the wine dataset, we will employ several multivariate statistical techniques to uncover patterns, relationships, and structure from the complex interplay of variables. The dataset, comprising physicochemical properties and quality ratings of wine samples, presents a rich opportunity for such multivariate exploration. The methods we plan to use are as follows:
 
 **a. Data Reduction or Structural Simplification:**
 
+To distill the essence of our dataset and reduce its dimensionality without significant loss of information, we will apply PCA to transform the original variables into a smaller number of uncorrelated variables called principal components. This technique will help us visualize the structure of the data, identify patterns, and determine which variables contribute most to the variation in wine quality. We will also use factor analysis to identify latent variables that capture the underlying relationships between observed variables. By modeling the covariance structure, we can simplify the data into factors that represent the dataset's intrinsic properties, which may correspond to underlying chemical and sensory dimensions of wine quality.
 
 **b. Grouping or Discrimination:**
 
+To classify our observations into meaningful groups and discern the dataset's inherent structure, we will utilize **Cluster Analysis** to discover natural groupings or clusters within the wine samples based on their physicochemical attributes. Conduct **Discriminant Analysis** to determine which variables have the most significant impact on the categorical distinction between red and white wines. It will also allow us to develop a predictive model for classifying the wine type based on the measured attributes.
 
 **c. Dependence Investigation:**
 
+Calculate correlation coefficients to evaluate the strength and direction of the linear relationships between pairs of variables. We will also use **Canonical Correlation Analysis (CCA)** to study the relationship between two sets of variables (for instance, physicochemical properties versus sensory attributes). By exploring the correlations between these variable sets, we aim to capture the most significant overall correlations and derive insights into the multidimensional relationships within the dataset.
 
 **d. Prediction or classification:**
 
@@ -76,3 +81,6 @@ Build a Multivariate Regression linear model to predict wines' quality scores ba
 **e. Hypothesis construction and testing:**
 
 Use one-way MANOVA to test if some quality score share the same mean results (which could be due to different graders giving different scores to wines that share the same properties) and could be combine into one single category (test for mean equality and consider confidence intervals). Test if (and which) chemical properties interacts in a way that has a significant impact on quality score, if not, test if they are additive. Finally, test if there is a statistically significant difference in quality score depending on chemical properties.
+
+
+Each of these methods will contribute to a comprehensive understanding of the dataset, guiding our further analysis and potential recommendations for the wine industry.
