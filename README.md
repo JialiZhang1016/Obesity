@@ -51,8 +51,11 @@ The dataset provides a granular look at the chemical composition and sensory att
 - **Alcohol** (numeric): The alcohol percentage, directly influencing flavor and body.
 - **Wine Type** (categorical): Distinguishes between red and white wine variants.
 - **Quality** (discrete): An assessment of wine quality on a scale from 0 to 10, based on sensory evaluation.
+  
 The output variable, **quality**, scored between 0 and 10, is determined through sensory analysis, providing a subjective yet invaluable measure of each wine's overall excellence.
+
 By exploring these attributes, our project aims not only to dissect the complex interplay of factors influencing wine quality but also to contribute valuable insights to the wine industry, enhancing our understanding of what makes a wine stand out. This endeavor stands as a testament to the power of data in unlocking the secrets of viticulture and oenology, guiding us towards the creation of superior wines that delight the senses.
+
 
 ## 3. Multivariate Statistical Methods
 
