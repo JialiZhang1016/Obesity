@@ -68,11 +68,11 @@ To distill the essence of our dataset and reduce its dimensionality without sign
 
 **b. Grouping or Discrimination:**
 
-To classify our observations into meaningful groups and discern the dataset's inherent structure, we will utilize **Cluster Analysis** to discover natural groupings or clusters within the wine samples based on their physicochemical attributes. Conduct **Discriminant Analysis** to determine which variables have the most significant impact on the categorical distinction between red and white wines. It will also allow us to develop a predictive model for classifying the wine type based on the measured attributes.
+To classify our observations into meaningful groups and discern the dataset's inherent structure, we will utilize Cluster Analysis to discover natural groupings or clusters within the wine samples based on their physicochemical attributes. Conduct Discriminant Analysis to determine which variables have the most significant impact on the categorical distinction between red and white wines. It will also allow us to develop a predictive model for classifying the wine type based on the measured attributes.
 
 **c. Dependence Investigation:**
 
-Calculate correlation coefficients to evaluate the strength and direction of the linear relationships between pairs of variables. We will also use **Canonical Correlation Analysis (CCA)** to study the relationship between two sets of variables (for instance, physicochemical properties versus sensory attributes). By exploring the correlations between these variable sets, we aim to capture the most significant overall correlations and derive insights into the multidimensional relationships within the dataset.
+Calculate correlation coefficients to evaluate the strength and direction of the linear relationships between pairs of variables. We will also use Canonical Correlation Analysis (CCA) to study the relationship between two sets of variables (for instance, physicochemical properties versus sensory attributes). By exploring the correlations between these variable sets, we aim to capture the most significant overall correlations and derive insights into the multidimensional relationships within the dataset.
 
 **d. Prediction or classification:**
 
