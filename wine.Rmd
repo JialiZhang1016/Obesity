@@ -285,3 +285,34 @@ transform_check_normality <- function(data, var) {
 results <- transform_check_normality(white_wine, "residual.sugar")
 print(results)
 ```
+# Check for multivariate normality
+
+# Models
+
+## a. Data Reduction or Structural Simplification (Jarrad)
+### PCA
+### FA
+
+## b. Grouping or Discrimination
+### LDA (chapter 11) (Maddie)
+### QDA (chapter 11) (Maddie)
+### Cluster Analysis (Jiali)
+
+## c. Dependence Investigation (Jiali)
+### Correlation Analysis
+### Canonical Correlation Analysis (chapter 10)
+
+## d. Prediction or classification (Maddie)
+## Logistic regression (chapter 11)
+### Multivariate Regression
+
+## e. Hypothesis construction and testing (Jarrad)
+### one-way MANOVA
+
+
+
+
+```{r}
+
+```
+
