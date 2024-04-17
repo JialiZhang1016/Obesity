@@ -1,0 +1,287 @@
+---
+title: "Untitled"
+output: html_document
+date: "2024-04-17"
+---
+
+```{r}
+library(ggplot2)
+library(reshape2)
+library(MASS)
+library(nortest)
+```
+
+# read data
+```{r}
+red_wine <- read.csv("winequality-red.csv", sep = ";") 
+white_wine <- read.csv("winequality-white.csv", sep = ";")
+
+red_wine$wine_type <- 'red'
+white_wine$wine_type <- 'white'
+
+winedata <- rbind(red_wine, white_wine)
+write.csv(winedata, "wine.csv", row.names = FALSE)
+```
+
+# Get to know data
+```{r}
+# dimension of data
+dim(winedata) # 6497 rows x 13 variables
+
+# features in data
+names(winedata) 
+
+```
+
+# Categorical data visualization
+```{r}
+# Comments
+# Most common wine type = white wine
+# Most common quality grade = 6, 5, & 7
+
+# Get the frequency table
+quality_table <- table(winedata$quality)
+type_table <- table(winedata$wine_type)
+
+# View the frequency table
+print(quality_table)
+print(type_table)
+
+
+# barplot
+winedata$quality <- factor(winedata$quality)
+ggplot(winedata, aes(x = quality)) + geom_bar(fill = "skyblue") + 
+  labs(x = "quality", y = "count")
+
+winedata$wine_type <- factor(winedata$wine_type)
+ggplot(winedata, aes(x = wine_type)) + geom_bar(fill = "skyblue") + 
+  labs(x = "type of wine", y = "count")
+```
+
+# Quantitative data visualization 
+
+```{r}
+# Get summary of all variables
+summary(winedata[,1:11])
+```
+
+## histogram
+```{r}
+ggplot(winedata, aes(x = fixed.acidity)) +
+  geom_histogram(color = "white", fill = "skyblue") +
+  labs(x = "fixed acidity", y = "count") + theme_minimal()
+
+ggplot(winedata, aes(x = volatile.acidity)) +
+  geom_histogram(color = "white", fill = "skyblue") +
+  labs(x = "volatile acidity", y = "count") + theme_minimal()
+
+ggplot(winedata, aes(x = citric.acid)) +
+  geom_histogram(color = "white", fill = "skyblue") +
+  labs(x = "citric acid", y = "count") + theme_minimal()
+
+ggplot(winedata, aes(x = residual.sugar)) +
+  geom_histogram(color = "white", fill = "skyblue") +
+  labs(x = "residual sugar", y = "count") + theme_minimal()
+
+ggplot(winedata, aes(x = chlorides)) +
+  geom_histogram(color = "white", fill = "skyblue") +
+  labs(x = "chlorides", y = "count") + theme_minimal()
+
+ggplot(winedata, aes(x = free.sulfur.dioxide)) +
+  geom_histogram(color = "white", fill = "skyblue") +
+  labs(x = "free sulfur dioxide", y = "count") + theme_minimal()
+
+ggplot(winedata, aes(x = total.sulfur.dioxide)) +
+  geom_histogram(color = "white", fill = "skyblue") +
+  labs(x = "total sulfur dioxide", y = "count") + theme_minimal()
+
+ggplot(winedata, aes(x = density)) +
+  geom_histogram(color = "white", fill = "skyblue") +
+  labs(x = " ", y = "count") + theme_minimal()
+
+ggplot(winedata, aes(x = density)) +
+  geom_histogram(color = "white", fill = "skyblue") +
+  labs(x = "density", y = "count") + theme_minimal()
+
+ggplot(winedata, aes(x = pH)) +
+  geom_histogram(color = "white", fill = "skyblue") +
+  labs(x = "pH", y = "count") + theme_minimal()
+
+ggplot(winedata, aes(x = sulphates)) +
+  geom_histogram(color = "white", fill = "skyblue") +
+  labs(x = "sulphates", y = "count") + theme_minimal()
+
+ggplot(winedata, aes(x = alcohol)) +
+  geom_histogram(color = "white", fill = "skyblue") +
+  labs(x = "alcohol", y = "count") + theme_minimal()
+```
+
+## density plots
+```{r}
+ggplot(winedata, aes(x = fixed.acidity)) +
+  geom_density() +
+  labs(title = "Density Plot", x = "fixed acidity") +
+  theme_minimal()
+```
+
+## boxplot
+```{r}
+ggplot(winedata, aes(x = fixed.acidity)) + geom_boxplot() +
+  labs(title = "Box Plot of fixed acidity", x = "fixed acidity") +
+  theme_minimal()
+
+ggplot(winedata, aes(x = volatile.acidity)) + geom_boxplot() +
+  labs(title = "Box Plot of volatile.acidity", x = "volatile.acidity") + theme_minimal()
+
+ggplot(winedata, aes(x = citric.acid)) + geom_boxplot() +
+  labs(title = "Box Plot of citric.acid", x = "citric.acid") + theme_minimal()
+
+ggplot(winedata, aes(x = residual.sugar)) + geom_boxplot() +
+  labs(title = "Box Plot of residual.sugar", x = "residual.sugar") + theme_minimal()
+
+ggplot(winedata, aes(x = chlorides)) + geom_boxplot() +
+  labs(title = "Box Plot of chlorides", x = "chlorides") + theme_minimal()
+
+ggplot(winedata, aes(x = free.sulfur.dioxide)) + geom_boxplot() +
+  labs(title = "Box Plot of free.sulfur.dioxide", x = "free.sulfur.dioxide") + theme_minimal()
+
+ggplot(winedata, aes(x = total.sulfur.dioxide)) + geom_boxplot() +
+  labs(title = "Box Plot of total sulfur dioxide", x = "total.sulfur.dioxide") + theme_minimal()
+
+ggplot(winedata, aes(x = density)) + geom_boxplot() +
+  labs(title = "Box Plot of density", x = "density") + theme_minimal()
+
+ggplot(winedata, aes(x = pH)) + geom_boxplot() +
+  labs(title = "Box Plot of pH", x = "pH") + theme_minimal()
+
+ggplot(winedata, aes(x = sulphates)) + geom_boxplot() +
+  labs(title = "Box Plot of sulphates", x = "sulphates") + theme_minimal()
+
+ggplot(winedata, aes(x = alcohol)) + geom_boxplot() +
+  labs(title = "Box Plot of alcohol", x = "alcohol") + theme_minimal()# Correlation matrix
+```
+
+# correlation matrix
+```{r}
+subset_winedata <- winedata[, 1:11]
+cor_matrix <- cor(subset_winedata)
+
+# Melt the correlation matrix for ggplot2
+cor_melted <- melt(cor_matrix)
+
+# Create the heatmap
+heatmap <- ggplot(cor_melted, aes(Var1, Var2, fill = value)) +
+  geom_tile() + # This creates the heatmap squares
+  scale_fill_gradient2(low = "blue", high = "red", mid = "white", 
+                       midpoint = 0, limit = c(-1,1), space = "Lab", 
+                       name="Correlation") +
+  geom_text(aes(label = sprintf("%.2f", value)), color = "black", size = 3) +
+  theme_minimal() + # Clean theme
+  theme(axis.text.x = element_text(angle = 45, hjust = 1), # Rotate x axis labels
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank())
+
+# Print the heatmap
+print(heatmap)
+
+```
+
+# normality check
+## boxcox transformation
+```{r}
+# Function 1: Check Normality
+check_normality <- function(data, var) {
+  test_result <- lillie.test(data[[var]])
+  is_normal <- if (test_result$p.value < 0.05) "not normal" else "normal"
+  cat("Variable", var, "is", is_normal, "- p-value:", test_result$p.value, "\n")
+  return(test_result$p.value)
+}
+
+# Function 2: Apply Box-Cox Transformation
+apply_boxcox <- function(data, var) {
+  if (any(data[[var]] <= 0)) {
+    offset <- abs(min(data[[var]])) + 1
+    data[[var]] <- data[[var]] + offset
+  }
+  transformed_data <- boxcox(data[[var]] ~ 1, lambda = seq(-2, 2, by = 0.1))
+  lambda_optimal <- transformed_data$x[which.max(transformed_data$y)]
+  data[[var]] <- (data[[var]]^lambda_optimal - 1) / lambda_optimal
+  cat("Box-Cox transformation applied to", var, "with λ =", lambda_optimal, "\n")
+  return(list(data = data, lambda = lambda_optimal))
+}
+
+# Function 3: Recheck Normality
+recheck_normality <- function(data, var) {
+  test_result <- lillie.test(data[[var]])
+  is_normal <- if (test_result$p.value < 0.05) "not normal" else "normal"
+  cat("Variable", var, "after Box-Cox is", is_normal, "- p-value:", test_result$p.value, "\n\n")
+  return(test_result$p.value)
+}
+
+# Applying the functions on each variable
+red_variables <- names(red_wine)[1:11]  # First 11 variables
+white_variables <- names(white_wine)[1:11]  # First 11 variables
+
+for (var in red_variables) {
+  p_value <- check_normality(red_wine, var)
+  if (p_value < 0.05) {
+    transformed <- apply_boxcox(red_wine, var)
+    red_wine <- transformed$data
+    recheck_normality(red_wine, var)
+  }
+}
+
+for (var in white_variables) {
+  p_value <- check_normality(white_wine, var)
+  if (p_value < 0.05) {
+    transformed <- apply_boxcox(white_wine, var)
+    white_wine <- transformed$data
+    recheck_normality(white_wine, var)
+  }
+}
+
+```
+
+
+## hist plot
+```{r}
+variables <- names(white_wine[,1:11])
+for (var in variables) {
+  hist(white_wine[[var]], main=paste("Histogram of", var), xlab=var, col="lightblue", border="black")
+  # Adds a normal curve for reference
+  mean_val <- mean(white_wine[[var]], na.rm = TRUE)
+  sd_val <- sd(white_wine[[var]], na.rm = TRUE)
+  curve(dnorm(x, mean=mean_val, sd=sd_val), add=TRUE, col="red")
+}
+```
+
+## other tranformation
+```{r}
+# Function to apply various transformations and check normality
+transform_check_normality <- function(data, var) {
+  
+  if (any(data[[var]] <= 0)) {
+    # Add 1 to all elements to make them positive
+    data[[var]] <- data[[var]] + 1
+  }
+  
+  transformations <- list(
+    "log" = log(data[[var]]),
+    "sqrt" = sqrt(data[[var]]),
+    "inverse" = 1 / data[[var]],
+    "exp" = exp(data[[var]])
+  )
+  
+  results <- sapply(transformations, function(x) {
+    if (any(is.na(x))) return(c(p_value = NA, is_normal = NA))
+    test_result <- shapiro.test(x)
+    return(c(p_value = test_result$p.value, is_normal = ifelse(test_result$p.value < 0.05, "not normal", "normal")))
+  })
+  
+  return(results)
+}
+
+# Example variable
+results <- transform_check_normality(white_wine, "residual.sugar")
+print(results)
+```
