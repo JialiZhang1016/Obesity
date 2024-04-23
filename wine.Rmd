@@ -324,8 +324,96 @@ write.csv(wine1, "wine1.csv", row.names = FALSE)
 ### FA
 
 ## b. Grouping or Discrimination
-### LDA (chapter 11) (Maddie)
-### QDA (chapter 11) (Maddie)
+### Test the equality of covariance matrices (red vs white)
+```{r}
+g = 2
+p = 11
+
+Sp = matrix(0, nrow = p, ncol = p)
+S = list()
+X_mean = list()
+total_df = 0
+total_inv_df = 0
+wt_sum_logdet_cov = 0
+
+for (i in 1:g) {
+  if (g==1){group_data = red_wine[,c(-12, -13)]}
+  if (g==2){group_data = white_wine[,c(-12, -13)]}
+  
+  m = dim(group_data)[1]
+  X_mean[[i]] = colMeans(group_data)
+  S[[i]] = cov(group_data)
+  
+  total_df = total_df + (m - 1)
+  total_inv_df = total_inv_df + 1 / (m - 1)
+  
+  Sp = Sp + (m - 1) * S[[i]]
+  wt_sum_logdet_cov = wt_sum_logdet_cov + (m - 1) * log(det(S[[i]]))
+}
+
+Sp = Sp / total_df
+M = total_df * log(det(Sp)) - wt_sum_logdet_cov
+u = (total_inv_df - 1 / total_df) * ((2 * p^2 + 3 * p - 1) / (6 * (p + 1) * (g - 1)))
+
+C_obs = (1 - u) * M
+nu = p * (p + 1) * (g - 1) / 2
+p_value = 1 - pchisq(C_obs, df = nu)
+
+if (p_value < 0.05){
+  print(c("p-value =", p_value, "The covariance matrices are not equal"))
+} else {
+  print(c("p-value =", p_value, " The covariance matrices are equal"))
+}
+
+```
+
+### LDA 
+```{r}
+set.seed(123)
+t = nrow(winedata)*0.8 #train sample size
+test_ind = sample(nrow(winedata), t) #test indices
+
+wine_train <- winedata[test_ind, ]
+wine_train
+wine_validation <- winedata[-test_ind, ]
+```
+
+```{r}
+lda.wine = lda(wine_type ~.,data=wine_train[,c(-12)], CV = T);
+summary(lda.wine)
+cross_tab = table(wine_train$wine_type,lda.wine$class)
+diag(prop.table(cross_tab,1))
+sum(diag(prop.table(cross_tab)))
+
+
+
+lda.wine = lda(wine_type ~.,data=wine_train[,c(-12)]);
+summary(lda.wine)
+lda_pred = predict(lda.wine, wine_validation)
+cross_tab = table(wine_validation$wine_type,lda_pred$class)
+diag(prop.table(cross_tab,1))
+sum(diag(prop.table(cross_tab)))
+```
+### QDA 
+```{r}
+qda.wine = qda(wine_type~.,data=winedata[,c(-12)],CV=T);
+summary(qda.wine)
+```
+```{r}
+
+qda.wine = qda(wine_type ~.,data=wine_train[,c(-12)], CV = T);
+summary(qda.wine)
+cross_tab = table(wine_train$wine_type,qda.wine$class)
+diag(prop.table(cross_tab,1))
+sum(diag(prop.table(cross_tab)))
+
+qda.wine = qda(wine_type ~.,data=wine_train[,c(-12)]);
+summary(qda.wine)
+qda_pred = predict(qda.wine, wine_validation)
+cross_tab = table(wine_validation$wine_type,qda_pred$class)
+diag(prop.table(cross_tab,1))
+sum(diag(prop.table(cross_tab)))
+```
 ### Cluster Analysis (Jiali)
 
 
@@ -334,8 +422,35 @@ write.csv(wine1, "wine1.csv", row.names = FALSE)
 ### Canonical Correlation Analysis (chapter 10)
 
 ## d. Prediction or classification (Maddie)
-## Logistic regression (chapter 11)
+## Logistic regression
+```{r}
+set.seed(123)
+wine1.data <- read.csv("wine1.csv")
+wine1.data$wine_type <- ifelse(wine1.data$wine_type == "red", 1, 0)
+wine1.data$wine_type <- as.factor(wine1.data$wine_type)
+
+nrow(winedata)
+#wine_rsubset <- wine1.data[sample(nrow(winedata), 25), ]
+lg.wine = glm(wine_type ~ fixed.acidity + volatile.acidity + citric.acid 
+             + residual.sugar + chlorides + free.sulfur.dioxide + 
+               total.sulfur.dioxide + density +  pH + sulphates + alcohol 
+             + quality, family = binomial(link ="logit"), data = wine1.data)
+summary(lg.wine)
+```
 ### Multivariate Regression
+```{r}
+wine.quant = winedata[,c(-13)]
+
+#BIC backward model selection
+step(lm(quality ~ ., data = wine.quant), direction = "backward",
+     k=log(nrow(wine.quant)))
+
+#fit the selected model
+fit.wine = lm(formula = quality ~ fixed.acidity + volatile.acidity + residual.sugar + 
+    free.sulfur.dioxide + total.sulfur.dioxide + density + pH + 
+    sulphates + alcohol, data = wine.quant)
+summary(fit.wine)
+```
 
 ## e. Hypothesis construction and testing (Jarrad)
 ### one-way MANOVA
