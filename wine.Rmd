@@ -9,19 +9,29 @@ library(ggplot2)
 library(reshape2)
 library(MASS)
 library(nortest)
+
+set.seed(42) 
+
 ```
 
 # read data
 ```{r}
-red_wine <- read.csv("winequality-red.csv", sep = ";") 
-white_wine <- read.csv("winequality-white.csv", sep = ";")
+# red_wine <- read.csv("winequality-red.csv", sep = ";") 
+# white_wine <- read.csv("winequality-white.csv", sep = ";")
+# 
+# red_wine$wine_type <- 'red'
+# white_wine$wine_type <- 'white'
+# 
+# red_wine_sample <- red_wine[sample(nrow(red_wine), 25), ]
+# white_wine_sample <- white_wine[sample(nrow(white_wine), 25), ]
+# 
+# wine <- rbind(red_wine_sample, white_wine_sample)
+# write.csv(wine, "wine.csv", row.names = FALSE)
 
-red_wine$wine_type <- 'red'
-white_wine$wine_type <- 'white'
-
-winedata <- rbind(red_wine, white_wine)
-write.csv(winedata, "wine.csv", row.names = FALSE)
+wine <- read.csv("wine.csv") 
 ```
+
+
 
 # Get to know data
 ```{r}
@@ -187,103 +197,123 @@ print(heatmap)
 ```
 
 # normality check
-## boxcox transformation
 ```{r}
-# Function 1: Check Normality
 check_normality <- function(data, var) {
   test_result <- lillie.test(data[[var]])
-  is_normal <- if (test_result$p.value < 0.05) "not normal" else "normal"
-  cat("Variable", var, "is", is_normal, "- p-value:", test_result$p.value, "\n")
+  is_normal <- if (test_result$p.value < 0.05) "not normal" else "normal ***"
+  cat(var, "has p-value:", test_result$p.value,  "is", is_normal,"\n")
   return(test_result$p.value)
 }
 
-# Function 2: Apply Box-Cox Transformation
-apply_boxcox <- function(data, var) {
+variables <- names(wine)[1:11]
+for (var in variables) {
+  p_value <- check_normality(wine, var)
+}
+```
+
+
+```{r}
+# variables <- names(wine[,c(1,2,4,5)])
+# for (var in variables) {
+#   hist(wine[[var]], main=paste("Histogram of", var), xlab=var, col="lightblue", border="black")
+#   # Adds a normal curve for reference
+#   mean_val <- mean(wine[[var]], na.rm = TRUE)
+#   sd_val <- sd(wine[[var]], na.rm = TRUE)
+#   curve(dnorm(x, mean=mean_val, sd=sd_val), add=TRUE, col="red")
+# }
+
+```
+
+## boxcox transformation
+```{r}
+apply_boxcox_save_check <- function(data, var) {
   if (any(data[[var]] <= 0)) {
-    offset <- abs(min(data[[var]])) + 1
+    offset <- abs(min(data[[var]], na.rm = TRUE)) + 1
     data[[var]] <- data[[var]] + offset
   }
-  transformed_data <- boxcox(data[[var]] ~ 1, lambda = seq(-2, 2, by = 0.1))
-  lambda_optimal <- transformed_data$x[which.max(transformed_data$y)]
-  data[[var]] <- (data[[var]]^lambda_optimal - 1) / lambda_optimal
-  cat("Box-Cox transformation applied to", var, "with λ =", lambda_optimal, "\n")
-  return(list(data = data, lambda = lambda_optimal))
+  
+  bc_transform <- boxcox(data[[var]] ~ 1, lambda = seq(-5, 5, by = 0.1))
+  lambda_optimal <- bc_transform$x[which.max(bc_transform$y)]
+  
+  if (lambda_optimal != 0) {
+    transformed_var <- (data[[var]]^lambda_optimal - 1) / lambda_optimal
+  } else {
+    transformed_var <- log(data[[var]])  # Use log transformation when lambda is zero
+  }
+  
+  test_result <- shapiro.test(transformed_var)
+  normality_status <- if (test_result$p.value < 0.05) "not normal" else "normal"
+  
+  if (normality_status == "normal") {
+    data[[var]] <- transformed_var
+  }
+  
+  cat("P-value:", test_result$p.value, var, "with λ =", lambda_optimal, normality_status, "\n")
+  
+  return(data)
 }
 
-# Function 3: Recheck Normality
-recheck_normality <- function(data, var) {
+variables <- names(wine[, c(1, 2, 4, 5)])
+wine1 <- wine  # Initialize wine1 as a copy of wine
+
+for (var in variables) {
+  wine1 <- apply_boxcox_save_check(wine1, var)
+  cat("\n")
+}
+```
+```{r}
+check_normality <- function(data, var) {
   test_result <- lillie.test(data[[var]])
-  is_normal <- if (test_result$p.value < 0.05) "not normal" else "normal"
-  cat("Variable", var, "after Box-Cox is", is_normal, "- p-value:", test_result$p.value, "\n\n")
+  is_normal <- if (test_result$p.value < 0.05) "not normal" else "normal ***"
+  cat(var, "has p-value:", test_result$p.value,  "is", is_normal,"\n")
   return(test_result$p.value)
 }
 
-# Applying the functions on each variable
-red_variables <- names(red_wine)[1:11]  # First 11 variables
-white_variables <- names(white_wine)[1:11]  # First 11 variables
-
-for (var in red_variables) {
-  p_value <- check_normality(red_wine, var)
-  if (p_value < 0.05) {
-    transformed <- apply_boxcox(red_wine, var)
-    red_wine <- transformed$data
-    recheck_normality(red_wine, var)
-  }
-}
-
-for (var in white_variables) {
-  p_value <- check_normality(white_wine, var)
-  if (p_value < 0.05) {
-    transformed <- apply_boxcox(white_wine, var)
-    white_wine <- transformed$data
-    recheck_normality(white_wine, var)
-  }
-}
-
-```
-
-
-## hist plot
-```{r}
-variables <- names(white_wine[,1:11])
+variables <- names(wine1)[1:11]
 for (var in variables) {
-  hist(white_wine[[var]], main=paste("Histogram of", var), xlab=var, col="lightblue", border="black")
-  # Adds a normal curve for reference
-  mean_val <- mean(white_wine[[var]], na.rm = TRUE)
-  sd_val <- sd(white_wine[[var]], na.rm = TRUE)
-  curve(dnorm(x, mean=mean_val, sd=sd_val), add=TRUE, col="red")
+  p_value <- check_normality(wine1, var)
 }
+write.csv(wine1, "wine1.csv", row.names = FALSE)
 ```
+
 
 ## other tranformation
 ```{r}
-# Function to apply various transformations and check normality
-transform_check_normality <- function(data, var) {
-  
-  if (any(data[[var]] <= 0)) {
-    # Add 1 to all elements to make them positive
-    data[[var]] <- data[[var]] + 1
-  }
-  
-  transformations <- list(
-    "log" = log(data[[var]]),
-    "sqrt" = sqrt(data[[var]]),
-    "inverse" = 1 / data[[var]],
-    "exp" = exp(data[[var]])
-  )
-  
-  results <- sapply(transformations, function(x) {
-    if (any(is.na(x))) return(c(p_value = NA, is_normal = NA))
-    test_result <- shapiro.test(x)
-    return(c(p_value = test_result$p.value, is_normal = ifelse(test_result$p.value < 0.05, "not normal", "normal")))
-  })
-  
-  return(results)
-}
+# # Function to apply various transformations and check normality
+# transform_check_normality <- function(data, var) {
+#   
+#   if (any(data[[var]] <= 0)) {
+#     # Add 1 to all elements to make them positive
+#     data[[var]] <- data[[var]] + 1
+#   }
+#   
+#   transformations <- list(
+#     "log" = log(data[[var]]),
+#     "sqrt" = sqrt(data[[var]]),
+#     "inverse" = 1 / data[[var]],
+#     "exp" = exp(data[[var]]),
+#     "rank" = rank(data[[var]]) 
+#   )
+#   
+#   results <- sapply(transformations, function(x) {
+#     if (any(is.na(x))) return(c(p_value = NA, is_normal = NA))
+#     test_result <- shapiro.test(x)
+#     return(c(p_value = test_result$p.value, is_normal = ifelse(test_result$p.value < 0.05, "not normal", "normal")))
+#   })
+#   
+#   return(results)
+# }
+# 
+# 
+# variables <- names(wine[,c(1,2,4,5)])
+# results_list <- list()
+# for (var in variables) {
+#     result <- transform_check_normality(wine, var) 
+#     results_list[[var]] <- result  
+# }
+# 
+# print(results_list)
 
-# Example variable
-results <- transform_check_normality(white_wine, "residual.sugar")
-print(results)
 ```
 # Check for multivariate normality
 
@@ -297,6 +327,7 @@ print(results)
 ### LDA (chapter 11) (Maddie)
 ### QDA (chapter 11) (Maddie)
 ### Cluster Analysis (Jiali)
+
 
 ## c. Dependence Investigation (Jiali)
 ### Correlation Analysis
