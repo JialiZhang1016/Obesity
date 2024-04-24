@@ -1,0 +1,364 @@
+---
+title: "Untitled"
+output: html_document
+date: "2024-04-17"
+---
+
+```{r}
+library(ggplot2)
+library(reshape2)
+library(MASS)
+library(nortest)
+
+set.seed(42) 
+```
+# Introduction
+## Back ground 
+Wine is a product that can vary in price and in quality ; some varieties are akin to cheap consummers goods while others are luxury products. In that context, it can be hard for consummers to identify which are more appropriate for certain occasions, or which are worth spending more or less money on ; similarly, for producers, the task of setting up a price can be made harder. On both sides, certifications are very important and thus, there is a real need to build trustworthy models to evaluate wines quality: it would bring clarity to consumers and recognition to producers. Moreover, by identifying the most important factors, the latter could turn their focus on these aspects and find more efficient ways to improve their wine's rating.
+
+```{r}
+red_wine <- read.csv("winequality-red.csv", sep = ";") 
+white_wine <- read.csv("winequality-white.csv", sep = ";")
+
+red_wine$wine_type <- 'red'
+white_wine$wine_type <- 'white'
+
+wine <- rbind(red_wine, white_wine)
+write.csv(wine, "wine.csv", row.names = FALSE)
+```
+
+## variables
+Our project is designed to harness the rich insights of a comprehensive public dataset, featuring detailed attributes and quality assessments of wine samples from Minho, a renowned wine-producing region in north-west Portugal. The dataset encompasses an extensive period of data collection, from May 2004 to February 2007, and includes an impressive total of 6,498 records related to both red and white wine variants, dissected across 11 key attributes. This meticulous compilation offers an unparalleled opportunity to delve into the nuances that distinguish wine quality, presenting a foundation for robust analysis and potential advancements in wine science.
+The dataset provides a granular look at the chemical composition and sensory attributes of wine, each variable casting light on its potential impact on overall quality. These attributes include:
+- **Fixed Acidity** (numeric): Reflects the concentration of nonvolatile acids (such as tartaric acid) that remain fixed during winemaking and contribute to the wine's structure.
+- **Volatile Acidity** (numeric): Measures the volatile acids (like acetic acid), where excessive levels can mar wine with an undesirable vinegar taste.
+- **Citric Acid** (numeric): Although present in small amounts, citric acid can enhance the wine's freshness and flavor profile.
+- **Residual Sugar** (numeric): Indicates the sugar level post-fermentation, affecting sweetness.
+- **Chlorides** (numeric): The measure of salt content in wine, impacting taste.
+- **Free Sulfur Dioxide** (numeric): Represents the portion of sulfur dioxide not bound to other molecules, crucial for preserving wine's freshness and inhibiting microbial growth.
+- **Total Sulfur Dioxide** (numeric): The total concentration of sulfur dioxide, encompassing both free and bound forms, essential for wine longevity.
+- **Density** (numeric): Reflects the wine's density, which correlates with its alcohol and sugar content.
+- **pH** (numeric): A vital indicator of acidity, influencing taste, color, and stability.
+- **Sulphates** (numeric): Pertains to added sulphates like potassium sulphate, affecting microbial stability and antioxidant properties.
+- **Alcohol** (numeric): The alcohol percentage, directly influencing flavor and body.
+- **Wine Type** (categorical): Distinguishes between red and white wine variants.
+- **Quality** (discrete): An assessment of wine quality on a scale from 0 to 10, based on sensory evaluation.
+
+By exploring these attributes, our project aims not only to dissect the complex interplay of factors influencing wine quality but also to contribute valuable insights to the wine industry, enhancing our understanding of what makes a wine stand out.
+
+# EDA of Data
+# Data Normalization
+## 1. univariate normality
+```{r}
+check_normality <- function(data, var) {
+  test_result <- lillie.test(data[[var]])
+  is_normal <- if (test_result$p.value < 0.05) "not normal" else "normal ***"
+  cat(var, "has p-value:", test_result$p.value,  "is", is_normal,"\n")
+  return(test_result$p.value)
+}
+
+variables <- names(wine)[1:11]
+for (var in variables) {
+  p_value <- check_normality(wine, var)
+}
+```
+
+
+```{r}
+# variables <- names(wine[,c(1,2,4,5)])
+# for (var in variables) {
+#   hist(wine[[var]], main=paste("Histogram of", var), xlab=var, col="lightblue", border="black")
+#   # Adds a normal curve for reference
+#   mean_val <- mean(wine[[var]], na.rm = TRUE)
+#   sd_val <- sd(wine[[var]], na.rm = TRUE)
+#   curve(dnorm(x, mean=mean_val, sd=sd_val), add=TRUE, col="red")
+# }
+
+```
+
+## boxcox transformation
+```{r}
+apply_boxcox_save_check <- function(data, var) {
+  if (any(data[[var]] <= 0)) {
+    offset <- abs(min(data[[var]], na.rm = TRUE)) + 1
+    data[[var]] <- data[[var]] + offset
+  }
+  
+  bc_transform <- boxcox(data[[var]] ~ 1, lambda = seq(-5, 5, by = 0.1))
+  lambda_optimal <- bc_transform$x[which.max(bc_transform$y)]
+  
+  if (lambda_optimal != 0) {
+    transformed_var <- (data[[var]]^lambda_optimal - 1) / lambda_optimal
+  } else {
+    transformed_var <- log(data[[var]])  # Use log transformation when lambda is zero
+  }
+  
+  test_result <- shapiro.test(transformed_var)
+  normality_status <- if (test_result$p.value < 0.05) "not normal" else "normal"
+  
+  if (normality_status == "normal") {
+    data[[var]] <- transformed_var
+  }
+  
+  cat("P-value:", test_result$p.value, var, "with λ =", lambda_optimal, normality_status, "\n")
+  
+  return(data)
+}
+
+variables <- names(wine[, c(1, 2, 4, 5)])
+wine1 <- wine  # Initialize wine1 as a copy of wine
+
+wine1 <- read.csv('wine1.csv')
+for (var in variables) {
+  wine1 <- apply_boxcox_save_check(wine1, var)
+  cat("\n")
+}
+```
+```{r}
+check_normality <- function(data, var) {
+  test_result <- lillie.test(data[[var]])
+  is_normal <- if (test_result$p.value < 0.05) "not normal" else "normal ***"
+  cat(var, "has p-value:", test_result$p.value,  "is", is_normal,"\n")
+  return(test_result$p.value)
+}
+
+variables <- names(wine1)[1:11]
+for (var in variables) {
+  p_value <- check_normality(wine1, var)
+}
+write.csv(wine1, "wine1.csv", row.names = FALSE)
+```
+
+
+## other tranformation
+```{r}
+# # Function to apply various transformations and check normality
+# transform_check_normality <- function(data, var) {
+#   
+#   if (any(data[[var]] <= 0)) {
+#     # Add 1 to all elements to make them positive
+#     data[[var]] <- data[[var]] + 1
+#   }
+#   
+#   transformations <- list(
+#     "log" = log(data[[var]]),
+#     "sqrt" = sqrt(data[[var]]),
+#     "inverse" = 1 / data[[var]],
+#     "exp" = exp(data[[var]]),
+#     "rank" = rank(data[[var]]) 
+#   )
+#   
+#   results <- sapply(transformations, function(x) {
+#     if (any(is.na(x))) return(c(p_value = NA, is_normal = NA))
+#     test_result <- shapiro.test(x)
+#     return(c(p_value = test_result$p.value, is_normal = ifelse(test_result$p.value < 0.05, "not normal", "normal")))
+#   })
+#   
+#   return(results)
+# }
+# 
+# 
+# variables <- names(wine[,c(1,2,4,5)])
+# results_list <- list()
+# for (var in variables) {
+#     result <- transform_check_normality(wine, var) 
+#     results_list[[var]] <- result  
+# }
+# 
+# print(results_list)
+
+```
+
+## Check for multivariate normality
+
+# Models
+
+## a. Data Reduction or Structural Simplification (Jarrad)
+### PCA
+### FA
+
+## b. Grouping or Discrimination
+### LDA (chapter 11) (Maddie)
+### QDA (chapter 11) (Maddie)
+### Cluster Analysis (Jiali)
+#### 1. Kmeans
+```{r}
+names(wine)
+
+table(wine$quality)
+table(wine$wine_type)
+
+kmeans_c4_wine = kmeans(wine[,1:11],2,nstart = 100);
+
+table(wine[,13],kmeans_c4_wine$cluster);
+```
+
+
+
+## c. Canonical Correlation Analysis(Jiali)
+
+```{r echo=FALSE, results='hide', warning=FALSE, message=FALSE}
+library(CCA);
+
+wine_scale = scale(wine[,1:11]);
+
+# Acidity Levels
+acidity_levels <- wine_scale[, c("fixed.acidity", 
+                                "volatile.acidity", 
+                                "citric.acid", 
+                                "pH")]
+
+# Sugar and Sulfur Dioxide
+sugar_sulfur_dioxide <- wine_scale[, c("residual.sugar", 
+                                      "free.sulfur.dioxide", 
+                                      "total.sulfur.dioxide")]
+
+# Other Chemical Properties
+other_chemical_properties <- wine_scale[, c("chlorides", 
+                                           "density", 
+                                           "sulphates", 
+                                           "alcohol")]
+```
+Canonical Correlation Analysis is a multivariate statistical method used to examine the relationships between two sets of variables. By identifying pairs of canonical variates—one for each set—that are maximally correlated, CCA helps to understand how one set of variables might predict or relate to another set.
+
+**Canonical Variables**:
+- Canonical variables (or variates) are synthetic variables created as linear combinations of the original variables within each set. These are formulated so that their correlations across the sets are maximized. 
+- The canonical variables for each set are derived as follows:
+  \[ u_i = a_{1i}x_1 + a_{2i}x_2 + \ldots + a_{mi}x_m \]
+  \[ v_i = b_{1i}y_1 + b_{2i}y_2 + \ldots + b_{ni}y_n \]
+  where \(a_{ji}\) and \(b_{ji}\) are coefficients optimizing the correlation between \(u_i\) and \(v_i\).
+
+**Selection Criteria**:
+- The number of canonical variates generated is the lesser of the number of variables in the two sets. Each pair of variates is orthogonal (independent) to the others within its own set.
+- The correlation coefficients (\(r_i\)) between the pairs of canonical variates provide a measure of their association.
+
+**Variable Sets**:
+
+- **Set 1 (Acidity Levels)**: Includes fixed acidity, volatile acidity, citric acid, and pH. These variables were chosen because they represent fundamental aspects of wine's chemical nature that directly affect its taste, stability, and fermentation process.
+- **Set 2 (Sugar and Sulfur Dioxide)**: Includes residual sugar, free sulfur dioxide, and total sulfur dioxide. This group is critical for understanding the wine's sweetness, preservation, and anti-oxidative properties.
+- **Set 3 (Other Chemical Properties)**: Includes chlorides, density, sulphates, and alcohol. These properties influence the wine's preservation, body, and overall quality.
+
+#### 1. Acidity Levels & Sugar and Sulfur Dioxide
+This analysis aims to explore and quantify the relationships between two critical sets of variables in wine data: **Acidity Levels** (comprising fixed acidity, volatile acidity, citric acid, and pH) and **Sugar and Sulfur Dioxide** (including residual sugar, free sulfur dioxide, and total sulfur dioxide).
+
+```{r echo=FALSE, results='hide'}
+cc1 = cc(acidity_levels, sugar_sulfur_dioxide);
+cc1$cor;
+cc1[3:4]
+```
+
+**Canonical Correlations**:
+The first three pairs of canonical variates yielded the following correlations:
+
+1. **First pair**: 0.55497110 (moderate correlation)
+2. **Second pair**: 0.20137538 (low correlation)
+3. **Third pair**: 0.03044709 (negligible correlation)
+
+These results indicate how well combinations of acidity-related variables correlate linearly with combinations of sugar and sulfur dioxide-related variables.
+
+**Canonical Coefficients**:
+
+- **Acidity Levels Coefficients (X Coefficients)**:
+  - **First Canonical Variate**:
+    - Fixed Acidity: -0.7190255
+    - Volatile Acidity: -0.3682300
+    - Citric Acid: 0.3076262
+    - pH: -0.4254979
+  - **Further Variates** show varying influence of these acidity variables, reflecting different aspects of their interaction with sugar and sulfur dioxide levels.
+
+- **Sugar and Sulfur Dioxide Coefficients (Y Coefficients)**:
+  - **First Canonical Variate**:
+    - Residual Sugar: 0.08087317
+    - Free Sulfur Dioxide: 0.13898312
+    - Total Sulfur Dioxide: 0.85208294
+  - **Further Variates** exhibit distinct patterns, indicating more complex and less pronounced relationships.
+
+The analysis indicates a significant but moderate initial correlation, driven primarily by total sulfur dioxide and fixed acidity. This suggests that as acidity levels in wine change, they might be closely linked with changes in sulfur dioxide levels, which play a crucial role in wine preservation and stability.
+
+The weaker correlations observed in the second and third variates suggest that while there are additional relationships between these sets of variables, they are less straightforward and possibly influenced by other factors not captured solely by these measurements.
+
+Canonical Correlation Analysis between Acidity Levels and Sugar and Sulfur Dioxide in wine reveals that there are meaningful but complex interactions between these variables. Understanding these relationships can help in optimizing wine production to enhance both taste and longevity, particularly by managing acidity and preservative levels effectively.
+
+#### 2. Acidity Levels & Other Chemical Properties
+The objective of this analysis is to explore and quantify the relationships between two sets of wine-related variables: Acidity Levels (fixed acidity, volatile acidity, citric acid, and pH) and Other Chemical Properties (chlorides, density, sulphates, and alcohol), utilizing Canonical Correlation Analysis (CCA).
+
+```{r echo=FALSE, results='hide'}
+cc2 = cc(acidity_levels, other_chemical_properties);
+cc2$cor;
+cc2[3:4]
+```
+
+**Canonical Correlations**:
+The analysis produced the following canonical correlations between the variate pairs:
+
+1. **First pair**: 0.68820274 (strong correlation)
+2. **Second pair**: 0.25636970 (moderate correlation)
+3. **Third pair**: 0.16665241 (weak correlation)
+4. **Fourth pair**: 0.01562419 (negligible correlation)
+
+These correlations reveal the varying degrees of linear relationships between the constructed variates of the two sets.
+
+**Canonical Coefficients**:
+
+- **Acidity Levels Coefficients (X Coefficients)**:
+  - **First Canonical Variate**: Predominantly influenced by fixed acidity.
+  - **Second Canonical Variate**: Volatile acidity is the major contributor.
+  - **Third Canonical Variate**: Led by fixed acidity.
+  - **Fourth Canonical Variate**: Citric acid is the dominant variable.
+
+- **Other Chemical Properties Coefficients (Y Coefficients)**:
+  - **First Canonical Variate**: Density has the most significant negative influence.
+  - **Second Canonical Variate**: Chlorides are the main factor.
+  - **Third Canonical Variate**: Density plays a pivotal role.
+  - **Fourth Canonical Variate**: Alcohol is the major contributor.
+
+The first canonical variate pair shows a strong correlation, indicating a significant relationship between a combination of acidity level variables (especially fixed acidity) and a combination of other chemical properties (dominantly density). This suggests that aspects such as the body and heaviness of wine, which are influenced by density, are closely linked to its acid content.
+
+Subsequent variate pairs show decreasing correlations, with the fourth pair being almost negligible, indicating limited to no linear relationship for that combination of variables.
+
+This Canonical Correlation Analysis has highlighted significant and varied relationships between acidity levels and other chemical properties of wine. The strongest correlation suggests a pivotal interaction between the wine's acidity and its physical characteristics such as density and alcohol content, which can greatly influence winemaking decisions and wine quality assessments.
+
+#### 3. Sugar and Sulfur Dioxide & Other Chemical Properties
+
+The goal of this analysis is to understand the relationships between two sets of wine-related variables: **Sugar and Sulfur Dioxide** (residual sugar, free sulfur dioxide, total sulfur dioxide) and **Other Chemical Properties** (chlorides, density, sulphates, and alcohol), using Canonical Correlation Analysis.
+
+```{r echo=FALSE, results='hide'}
+cc3 = cc(sugar_sulfur_dioxide, other_chemical_properties);
+cc3$cor;
+cc3[3:4]
+```
+
+**Canonical Correlations**:
+The canonical correlations for the first three pairs of variates are as follows:
+
+1. **First pair**: 0.735553383 (strong correlation)
+2. **Second pair**: 0.470342155 (moderate correlation)
+3. **Third pair**: 0.008172205 (negligible correlation)
+
+These values indicate the strength of the linear relationships between the canonical variates from each set.
+
+**Canonical Coefficients**:
+
+- **Sugar and Sulfur Dioxide Coefficients (X Coefficients)**:
+  - **First Canonical Variate**: Dominated by residual sugar.
+  - **Second Canonical Variate**: Strong influence from total sulfur dioxide.
+  - **Third Canonical Variate**: Largely influenced by total sulfur dioxide and negatively by free sulfur dioxide.
+
+- **Other Chemical Properties Coefficients (Y Coefficients)**:
+  - **First Canonical Variate**: Primarily driven by density.
+  - **Second Canonical Variate**: Notably influenced by alcohol and chlorides.
+  - **Third Canonical Variate**: Dominated by chlorides.
+
+
+The analysis reveals a strong initial correlation suggesting a significant link between the sugar/sulfur dioxide content and the density of the wine. This could suggest that wines with higher residual sugar potentially exhibit higher densities, which might influence sensory qualities like body and sweetness.
+
+Subsequent variates display moderate to negligible correlations, indicating less pronounced relationships for the other combinations of variables. The second variate suggests an interesting interaction between sulfur dioxide content and alcohol levels, possibly indicating how preservation strategies could be related to alcohol content for balance in winemaking.
+
+This Canonical Correlation Analysis highlights important relationships between the sugar and sulfur dioxide properties of wine and its other chemical characteristics, particularly the strong link between wine sweetness and its physical density. These insights can inform more nuanced approaches to balancing these properties in wine production, enhancing both preservation and sensory qualities.
+
+## d. Prediction or classification (Maddie)
+## Logistic regression (chapter 11)
+### Multivariate Regression
+
+## e. Hypothesis construction and testing (Jarrad)
+### one-way MANOVA
