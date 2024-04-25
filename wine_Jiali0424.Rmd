@@ -16,6 +16,26 @@ set.seed(42)
 ## Back ground 
 Wine is a product that can vary in price and in quality ; some varieties are akin to cheap consummers goods while others are luxury products. In that context, it can be hard for consummers to identify which are more appropriate for certain occasions, or which are worth spending more or less money on ; similarly, for producers, the task of setting up a price can be made harder. On both sides, certifications are very important and thus, there is a real need to build trustworthy models to evaluate wines quality: it would bring clarity to consumers and recognition to producers. Moreover, by identifying the most important factors, the latter could turn their focus on these aspects and find more efficient ways to improve their wine's rating.
 
+## Variables
+
+Our project is designed to harness the rich insights of a comprehensive public dataset, featuring detailed attributes and quality assessments of wine samples from Minho, a renowned wine-producing region in north-west Portugal. The dataset encompasses an extensive period of data collection, from May 2004 to February 2007, and includes an impressive total of 6,498 records related to both red and white wine variants, dissected across 11 key attributes. This meticulous compilation offers an unparalleled opportunity to delve into the nuances that distinguish wine quality, presenting a foundation for robust analysis and potential advancements in wine science. The dataset provides a granular look at the chemical composition and sensory attributes of wine, each variable casting light on its potential impact on overall quality. These attributes include:
+
+    Fixed Acidity ($X_1$, numeric): Reflects the concentration of nonvolatile acids (such as tartaric acid) that remain fixed during winemaking and contribute to the wine's structure.
+    Volatile Acidity ($X_2$, numeric): Measures the volatile acids (like acetic acid), where excessive levels can mar wine with an undesirable vinegar taste.
+    Citric Acid ($X_3$, numeric): Although present in small amounts, citric acid can enhance the wine's freshness and flavor profile.
+    Residual Sugar ($X_4$, numeric): Indicates the sugar level post-fermentation, affecting sweetness.
+    Chlorides ($X_5$, numeric): The measure of salt content in wine, impacting taste.
+    Free Sulfur Dioxide ($X_6$, numeric): Represents the portion of sulfur dioxide not bound to other molecules, crucial for preserving wine's freshness and inhibiting microbial growth.
+    Total Sulfur Dioxide ($X_7$, numeric): The total concentration of sulfur dioxide, encompassing both free and bound forms, essential for wine longevity.
+    Density ($X_8$, numeric): Reflects the wine's density, which correlates with its alcohol and sugar content.
+    pH ($X_9$, numeric): A vital indicator of acidity, influencing taste, color, and stability.
+    Sulphates ($X_{10}$, numeric): Pertains to added sulphates like potassium sulphate, affecting microbial stability and antioxidant properties.
+    Alcohol ($X_{11}$, numeric): The alcohol percentage, directly influencing flavor and body.
+    Quality ($X_{12}$, discrete): An assessment of wine quality on a scale from 0 to 10, based on sensory evaluation.
+    Wine Type ($X_{13}$, categorical): Distinguishes between red and white wine variants.
+
+By exploring these attributes, our project aims not only to dissect the complex interplay of factors influencing wine quality but also to contribute valuable insights to the wine industry, enhancing our understanding of what makes a wine stand out.
+
 ```{r}
 red_wine <- read.csv("winequality-red.csv", sep = ";") 
 white_wine <- read.csv("winequality-white.csv", sep = ";")
