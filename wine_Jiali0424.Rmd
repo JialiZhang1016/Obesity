@@ -1,187 +1,465 @@
 ---
-title: "Untitled"
-output: html_document
+title: "Wine dataset Multivariate analysis"
 date: "2024-04-17"
+output:
+  html_document:
+    toc: true  
+    toc_depth: 3  
+    df_print: paged
+  pdf_document: default
 ---
 
-```{r}
+```{r echo=FALSE, results='hide', warning=FALSE, message=FALSE}
+
 library(ggplot2)
 library(reshape2)
 library(MASS)
 library(nortest)
+library(rcompanion);
+
+if (!require(heplots)) install.packages("heplots");
+library(heplots);
+library(lattice);
+library(hexbin);
 
 set.seed(42) 
 ```
+
 # Introduction
+
 ## Back ground 
+
 Wine is a product that can vary in price and in quality ; some varieties are akin to cheap consummers goods while others are luxury products. In that context, it can be hard for consummers to identify which are more appropriate for certain occasions, or which are worth spending more or less money on ; similarly, for producers, the task of setting up a price can be made harder. On both sides, certifications are very important and thus, there is a real need to build trustworthy models to evaluate wines quality: it would bring clarity to consumers and recognition to producers. Moreover, by identifying the most important factors, the latter could turn their focus on these aspects and find more efficient ways to improve their wine's rating.
 
-```{r}
+```{r echo=FALSE, results='hide', warning=FALSE, message=FALSE}
 red_wine <- read.csv("winequality-red.csv", sep = ";") 
 white_wine <- read.csv("winequality-white.csv", sep = ";")
 
 red_wine$wine_type <- 'red'
 white_wine$wine_type <- 'white'
 
+
 wine <- rbind(red_wine, white_wine)
-write.csv(wine, "wine.csv", row.names = FALSE)
+winedata <- wine
+wine2 <- wine
+winequant <- wine[,1:11]
 ```
 
-## variables
+
+## Variables
+
 Our project is designed to harness the rich insights of a comprehensive public dataset, featuring detailed attributes and quality assessments of wine samples from Minho, a renowned wine-producing region in north-west Portugal. The dataset encompasses an extensive period of data collection, from May 2004 to February 2007, and includes an impressive total of 6,498 records related to both red and white wine variants, dissected across 11 key attributes. This meticulous compilation offers an unparalleled opportunity to delve into the nuances that distinguish wine quality, presenting a foundation for robust analysis and potential advancements in wine science.
 The dataset provides a granular look at the chemical composition and sensory attributes of wine, each variable casting light on its potential impact on overall quality. These attributes include:
-- **Fixed Acidity** (numeric): Reflects the concentration of nonvolatile acids (such as tartaric acid) that remain fixed during winemaking and contribute to the wine's structure.
-- **Volatile Acidity** (numeric): Measures the volatile acids (like acetic acid), where excessive levels can mar wine with an undesirable vinegar taste.
-- **Citric Acid** (numeric): Although present in small amounts, citric acid can enhance the wine's freshness and flavor profile.
-- **Residual Sugar** (numeric): Indicates the sugar level post-fermentation, affecting sweetness.
-- **Chlorides** (numeric): The measure of salt content in wine, impacting taste.
-- **Free Sulfur Dioxide** (numeric): Represents the portion of sulfur dioxide not bound to other molecules, crucial for preserving wine's freshness and inhibiting microbial growth.
-- **Total Sulfur Dioxide** (numeric): The total concentration of sulfur dioxide, encompassing both free and bound forms, essential for wine longevity.
-- **Density** (numeric): Reflects the wine's density, which correlates with its alcohol and sugar content.
-- **pH** (numeric): A vital indicator of acidity, influencing taste, color, and stability.
-- **Sulphates** (numeric): Pertains to added sulphates like potassium sulphate, affecting microbial stability and antioxidant properties.
-- **Alcohol** (numeric): The alcohol percentage, directly influencing flavor and body.
-- **Wine Type** (categorical): Distinguishes between red and white wine variants.
-- **Quality** (discrete): An assessment of wine quality on a scale from 0 to 10, based on sensory evaluation.
+
+- **Fixed Acidity** ($X_1$, numeric): Reflects the concentration of nonvolatile acids (such as tartaric acid) that remain fixed during winemaking and contribute to the wine's structure.
+
+- **Volatile Acidity** ($X_2$, numeric): Measures the volatile acids (like acetic acid), where excessive levels can mar wine with an undesirable vinegar taste.
+
+- **Citric Acid** ($X_3$, numeric): Although present in small amounts, citric acid can enhance the wine's freshness and flavor profile.
+
+- **Residual Sugar** ($X_4$, numeric): Indicates the sugar level post-fermentation, affecting sweetness.
+
+- **Chlorides** ($X_5$, numeric): The measure of salt content in wine, impacting taste.
+
+- **Free Sulfur Dioxide** ($X_6$, numeric): Represents the portion of sulfur dioxide not bound to other molecules, crucial for preserving wine's freshness and inhibiting microbial growth.
+
+- **Total Sulfur Dioxide** ($X_7$, numeric): The total concentration of sulfur dioxide, encompassing both free and bound forms, essential for wine longevity.
+
+- **Density** ($X_8$, numeric): Reflects the wine's density, which correlates with its alcohol and sugar content.
+
+- **pH** ($X_9$, numeric): A vital indicator of acidity, influencing taste, color, and stability.
+
+- **Sulphates** ($X_{10}$numeric): Pertains to added sulphates like potassium sulphate, affecting microbial stability and antioxidant properties.
+
+- **Alcohol** ($X_{11}$, numeric): The alcohol percentage, directly influencing flavor and body.
+
+- **Quality** ($X_{12}$, discrete): An assessment of wine quality on a scale from 0 to 10, based on sensory evaluation.
+
+- **Wine Type** ($X_{13}$, categorical): Distinguishes between red and white wine variants.
+
 
 By exploring these attributes, our project aims not only to dissect the complex interplay of factors influencing wine quality but also to contribute valuable insights to the wine industry, enhancing our understanding of what makes a wine stand out.
 
-# EDA of Data
+### barplot
+
+```{r echo=FALSE, results='hide', warning=FALSE, message=FALSE}
+# Set up the graphics window with specified margins
+par(mfrow=c(2, 1), mar=c(2, 2, 2, 2))
+
+# Assuming wine2$quality is already a factor
+# Create a bar plot of wine quality counts
+quality_counts <- table(wine2$quality)
+barplot(quality_counts, main="Bar Plot of Wine Quality", xlab="Quality", ylab="Count", col="skyblue")
+
+# Assuming wine2$wine_type is already a factor
+# Create a bar plot of wine type counts
+type_counts <- table(wine2$wine_type)
+barplot(type_counts, main="Bar Plot of Wine Type", xlab="Type of Wine", ylab="Count", col="skyblue")
+
+
+```
+White wine is the most common wine type recorded. In terms of wine quality, grades 5, 6 and 7 are the most common. They make up more than half of the data
+
+### boxplot
+
+```{r echo=FALSE, results='hide', warning=FALSE, message=FALSE}
+par(mfrow=c(3, 4), mar=c(2, 2, 2, 2))
+# Plotting code here
+
+variables <- c("fixed.acidity", "volatile.acidity", "citric.acid", "residual.sugar",
+               "chlorides", "free.sulfur.dioxide", "total.sulfur.dioxide", "density",
+               "pH", "sulphates", "alcohol")
+for (var in variables) {
+  boxplot(wine2[[var]], main=paste("Box Plot of", var), xlab=var, col="lightblue")
+}
+
+```
+The histograms fixed acidity, volatile acidity and citric acid all reveal that they are unimodal whereas their corresponding boxplot further show that they are right skewed. 
+
+Histograms for free sulphur dioxide and total sulphur dioxide reveals that these are unimodal and have bell-curved shapes. Their corresponding boxplots show they have some few outliers. Free suphur dioxide has first and third quarter values of 17 and 41 with a maximum value of 289. Meanwhile, total sulphur oxide has first and third quarters of 77 and 156 with a maximum value of 440.
+
+Alcohol, sulphates, density and pH seem to be fairly bell shaped as well. Finally, chlorides and residual sugar seem right skewed according to their histograms and boxplots.
+
+
 # Data Normalization
-## univariate normality
-```{r}
-check_normality <- function(data, var) {
-  test_result <- lillie.test(data[[var]])
-  is_normal <- if (test_result$p.value < 0.05) "not normal" else "normal ***"
-  cat(var, "has p-value:", test_result$p.value,  "is", is_normal,"\n")
-  return(test_result$p.value)
+## 1. Univariate normality
+For each variable in the dataset, a histogram was generated alongside a superimposed normal distribution curve to visualize the distribution of the data. The mean and standard deviation of each variable were calculated and used to plot the normal curve.
+
+Q-Q plots were also created to assess the quantiles of the wine characteristics against the quantiles of a normal distribution. A line (in steelblue) was added to each plot to provide a reference for assessing normality. The closer the data points are to this line, the more normally distributed they are.
+
+The r_Q values, which represent the correlation between the sample quantiles and the theoretical quantiles of the normal distribution, were calculated using the `cor` function on the Q-Q plot data points.
+```{r echo=FALSE, results='hide', warning=FALSE, message=FALSE}
+create_qq_plot_with_rQ <- function(data, column_name) {
+  qq_plot <- qqnorm(data[[column_name]])
+  qqline(data[[column_name]], col = "steelblue")
+  return(cor(qq_plot$x, qq_plot$y))
 }
 
-variables <- names(wine)[1:11]
-for (var in variables) {
-  p_value <- check_normality(wine, var)
+create_hist_with_normal <- function(data, column_name) {
+  hist(data[[column_name]], probability = TRUE, main = paste("Histogram -", column_name), xlab = column_name, col = 'lightblue', border = 'darkblue')
+  m <- mean(data[[column_name]], na.rm = TRUE)
+  sd <- sd(data[[column_name]], na.rm = TRUE)
+  curve(dnorm(x, mean = m, sd = sd), add = TRUE, col = "red", lwd = 2)
 }
+
+par(mar=c(3, 3, 2, 2)) 
+par(mfrow = c(3, 4))
+
+r_Q_values <- sapply(names(wine)[1:11], function(column_name) {
+  create_hist_with_normal(wine, column_name)
+  create_qq_plot_with_rQ(wine, column_name)
+})
+
+print(r_Q_values)
 ```
+Upon visual inspection of the histograms and the Q-Q plots, it appears that most variables exhibit some deviation from normality:
 
+1. Fixed Acidity, Volatile Acidity, and Citric Acid show histograms with a single peak, but the distribution is not perfectly symmetrical.
+2. Residual Sugar, Free Sulfur Dioxide, and Total Sulfur Dioxide display a right-skewed distribution, indicating the presence of outliers or a long tail to the right.
+3. Density and pH are relatively closer to a normal distribution, but slight deviations are evident.
+4. Sulphates and Alcohol concentrations show considerable variance from normality, especially at the tails of the distribution.
 
-```{r}
-# variables <- names(wine[,c(1,2,4,5)])
-# for (var in variables) {
-#   hist(wine[[var]], main=paste("Histogram of", var), xlab=var, col="lightblue", border="black")
-#   # Adds a normal curve for reference
-#   mean_val <- mean(wine[[var]], na.rm = TRUE)
-#   sd_val <- sd(wine[[var]], na.rm = TRUE)
-#   curve(dnorm(x, mean=mean_val, sd=sd_val), add=TRUE, col="red")
-# }
+The r_Q test results are as follows:
 
-```
+- Fixed Acidity: 0.9379
+- Volatile Acidity: 0.9358
+- Citric Acid: 0.9824
+- Residual Sugar: 0.9079
+- Chlorides: 0.7861
+- Free Sulfur Dioxide: 0.9699
+- Total Sulfur Dioxide: 0.9129
+- Density: 0.9837
+- pH: 0.9957
+- Sulphates: 0.9480
+- Alcohol: 0.9765
 
-## boxcox transformation
-```{r}
-apply_boxcox_save_check <- function(data, var) {
+Values closer to 1 suggest a stronger agreement with a normal distribution. All of them are less then cretical value 0.9935 at significance levels \alpha = 0.01.
+
+Further investigation may be required to address the non-normality, possibly through transformations or non-parametric methods.
+
+We create a function `transform_check_normality` to apply five transformations (logarithmic, square root, inverse, exponential, and rank) to each variable in the dataset. The Shapiro-Wilk test was employed to check for normality post-transformation. Here is the result for `fixed.acidity`.
+```{r echo=FALSE, results='hide', warning=FALSE, message=FALSE}
+# Function to apply various transformations and check normality
+transform_check_normality <- function(data, var) {
+
   if (any(data[[var]] <= 0)) {
-    offset <- abs(min(data[[var]], na.rm = TRUE)) + 1
-    data[[var]] <- data[[var]] + offset
+    # Add 1 to all elements to make them positive
+    data[[var]] <- data[[var]] + 1
   }
-  
-  bc_transform <- boxcox(data[[var]] ~ 1, lambda = seq(-5, 5, by = 0.1))
-  lambda_optimal <- bc_transform$x[which.max(bc_transform$y)]
-  
-  if (lambda_optimal != 0) {
-    transformed_var <- (data[[var]]^lambda_optimal - 1) / lambda_optimal
-  } else {
-    transformed_var <- log(data[[var]])  # Use log transformation when lambda is zero
-  }
-  
-  test_result <- shapiro.test(transformed_var)
-  normality_status <- if (test_result$p.value < 0.05) "not normal" else "normal"
-  
-  if (normality_status == "normal") {
-    data[[var]] <- transformed_var
-  }
-  
-  cat("P-value:", test_result$p.value, var, "with λ =", lambda_optimal, normality_status, "\n")
-  
-  return(data)
+
+  transformations <- list(
+    "log" = log(data[[var]]),
+    "sqrt" = sqrt(data[[var]]),
+    "inverse" = 1 / data[[var]],
+    "exp" = exp(data[[var]]),
+    "rank" = rank(data[[var]])
+  )
+
+  results <- sapply(transformations, function(x) {
+    if (any(is.na(x))) return(c(p_value = NA, is_normal = NA))
+    test_result <- shapiro.test(x)
+    return(c(p_value = test_result$p.value, is_normal = ifelse(test_result$p.value < 0.05, "not normal", "normal")))
+  })
+
+  return(results)
 }
 
-variables <- names(wine[, c(1, 2, 4, 5)])
-wine1 <- wine  # Initialize wine1 as a copy of wine
 
-wine1 <- read.csv('wine1.csv')
+variables <- names(wine[,1:11])
+results_list <- list()
 for (var in variables) {
-  wine1 <- apply_boxcox_save_check(wine1, var)
-  cat("\n")
-}
-```
-```{r}
-check_normality <- function(data, var) {
-  test_result <- lillie.test(data[[var]])
-  is_normal <- if (test_result$p.value < 0.05) "not normal" else "normal ***"
-  cat(var, "has p-value:", test_result$p.value,  "is", is_normal,"\n")
-  return(test_result$p.value)
+    result <- transform_check_normality(wine[1:1000,], var)
+    results_list[[var]] <- result
 }
 
-variables <- names(wine1)[1:11]
-for (var in variables) {
-  p_value <- check_normality(wine1, var)
-}
-write.csv(wine1, "wine1.csv", row.names = FALSE)
-```
-
-
-## other tranformation
-```{r}
-# # Function to apply various transformations and check normality
-# transform_check_normality <- function(data, var) {
-#   
-#   if (any(data[[var]] <= 0)) {
-#     # Add 1 to all elements to make them positive
-#     data[[var]] <- data[[var]] + 1
-#   }
-#   
-#   transformations <- list(
-#     "log" = log(data[[var]]),
-#     "sqrt" = sqrt(data[[var]]),
-#     "inverse" = 1 / data[[var]],
-#     "exp" = exp(data[[var]]),
-#     "rank" = rank(data[[var]]) 
-#   )
-#   
-#   results <- sapply(transformations, function(x) {
-#     if (any(is.na(x))) return(c(p_value = NA, is_normal = NA))
-#     test_result <- shapiro.test(x)
-#     return(c(p_value = test_result$p.value, is_normal = ifelse(test_result$p.value < 0.05, "not normal", "normal")))
-#   })
-#   
-#   return(results)
-# }
-# 
-# 
-# variables <- names(wine[,c(1,2,4,5)])
-# results_list <- list()
-# for (var in variables) {
-#     result <- transform_check_normality(wine, var) 
-#     results_list[[var]] <- result  
-# }
-# 
-# print(results_list)
+print(results_list[1])
 
 ```
 
-## Check for multivariate normality
+The Shapiro-Wilk test results for all the variables under all transformations showed p-values less than the threshold of 0.05, suggesting that none of the transformations resulted in a normal distribution at a 95% confidence level. The only exceptions were for pH under logarithmic and square root transformations, where the p-values indicated a failure to reject the null hypothesis of normality. However, given the stringent criteria for normality (α = 0.01), even these variables would not be considered normally distributed.
+
+
+## 2. Bivariate Normality
+
+**Pairs Plot **
+To investigate the bivariate relationships between the first 11 variables of a wine dataset to assess patterns, correlations, and potential normality, a pairs plot was generated using a random sample of 100 observations from the wine dataset. The plot includes scatterplots for each variable pairing along with histograms for the individual variables.
+
+```{r echo=FALSE, results='hide', warning=FALSE, message=FALSE}
+wine_sample <- wine[sample(nrow(wine), 100), ]
+pairs(wine_sample[, 1:11], main = "Pairs Plot of First 11 Variables")
+```
+A sample of 100 observations was randomly selected from the dataset to ensure variability and computational efficiency. The R programming language was utilized, leveraging its `pairs` function to create a comprehensive grid of scatterplots. Each plot juxtaposed two different variables, while histograms were generated for each individual variable along the diagonal of the grid.
+
+The pairs plot elucidates several notable features within the data:
+
+- **Linear Trends**: Certain pairs, such as 'fixed.acidity' and 'citric.acid', exhibited a positive linear trend, suggesting a potential direct relationship.
+- **Heteroscedasticity**: A few scatterplots indicated heteroscedastic patterns, where the variability of one variable seemed to change along with the level of another variable.
+- **Variable Independence**: Some pairs displayed a lack of discernible patterns, indicating possible statistical independence between these variables.
+- **Anomalous Observations**: Outliers were present in numerous bivariate scatterplots, potentially impacting correlation and regression analyses.
+- **Univariate Distributions**: The histograms revealed varying distributions across the variables, with most deviating from normality, as previously established in the univariate normality assessment.
+
+The pairs plot has provided valuable insights into the complex interplay of wine characteristics. The exploratory analysis has set the groundwork for subsequent, more rigorous statistical testing and modeling. 
+
+
+**chi-square Plot **
+
+A chi-square plot analysis was conducted to evaluate the association between pairs of variables within a wine dataset. The visual inspection aimed to detect deviations from expected distributions under the assumption of bivariate normality.
+
+```{r echo=FALSE, results='hide', warning=FALSE, message=FALSE}
+par(mfrow = c(3, 2), mar = c(4, 4, 2, 2))  # Set up the plot grid and margins
+for (i in 1:3) {
+  for (j in (i+1):4) {
+    wine_pair = wine[,c(i,j)]  # Select the pair of variables
+    plot_title = paste( colnames(wine)[i], "and", colnames(wine)[j])
+    cqplot(wine_pair, main = plot_title)
+  }
+}
+```
+The chi-square plots exhibited the following trends across the variable pairs:
+
+- A general upward trajectory, indicating a positive association between the variables.
+- Several plots displayed pronounced deviations from the reference line towards the higher quantiles, signaling potential outliers or non-normal bivariate distributions.
+
+The chi-square plots serve as diagnostic tools for identifying multivariate outliers and assessing the assumption of bivariate normality. The substantial divergence in some plots raises questions about underlying distributions and potential influential factors. 
+
+## 3. Check all variables normality
+
+A chi-square plot was constructed for the first 11 variables of the wine dataset using the `cqplot` function.
+
+```{r echo=FALSE, results='hide', warning=FALSE, message=FALSE}
+cqplot(wine[,1:11],main = "Chi-square Plot of all variables")
+```
+The chi-square plot showed an increase in the squared Mahalanobis distances with increasing quantiles. Notably, several points lay significantly above the reference line, indicating the presence of outliers that deviate from a multivariate normal distribution.
+
 
 # Models
 
-## a. Data Reduction or Structural Simplification (Jarrad)
-### PCA
-### FA
+## Data Reduction or Structural Simplification 
 
-## b. Grouping or Discrimination
-### LDA (chapter 11) (Maddie)
-### QDA (chapter 11) (Maddie)
-### Cluster Analysis (Jiali)
-#### 1. Hierarchal Clustering
+### PCA
+
+In our analysis, we turn to Principal Component Analysis (PCA) as a means to interpret our dataset more effectively by reducing its dimensionality while preserving as much variation as possible. We set a pre-defined cutoff of $90\%$ variation explained to guide our approach selection.
+
+```{r echo=FALSE, results='hide', warning=FALSE, message=FALSE}
+### Using the correlation matrix
+pca_result = princomp(winequant, cor = TRUE);
+summary(pca_result);
+loadings(pca_result);
+plot(pca_result,main="Scree Plot",type="lines",col="red")
+```
+
+PCA based on the correlation matrix revealed that the first principal component accounts for only 9% of the total sample variation, necessitating the inclusion of the first 7 principal components to explain $90\%$ of the total variance. While this is a substantial proportion, the significant number of principal components required indicates limited reduction in dimensionality. Alternatively, examination of the scree plot suggests a somewhat sharp drop at component 4. However, the first 4 principal components only explain $36\%$ of the total variation, which is suboptimal.
+
+```{r echo=FALSE, results='hide', warning=FALSE, message=FALSE}
+### Using covariance matrix
+pca_result = princomp(winequant);
+summary(pca_result);
+loadings(pca_result);
+plot(pca_result,main="Scree Plot",type="lines",col="blue")
+
+### finding the coef of the first principal component
+S <- cov(winequant)
+eig_decomp <- eigen(S)
+eigenvectors <- eig_decomp$vectors
+print(eigenvectors[,1])
+```
+
+Conversely, PCA based on the covariance matrix demonstrated that the first principal component explains a remarkable 95% of the total sample variance. Consistent with this finding, the scree plot reveals a clear elbow at component 1, indicating that further components contribute minimally to the total variance. Therefore, the first principal component alone can effectively replace the original 11 features.
+
+However, it's essential to note that results obtained from the covariance matrix may be misleading, as features with larger values disproportionately influence the analysis. Therefore, we opt for the PCA derived from the correlation matrix for its more balanced representation.
+
+In conclusion, PCA based on the correlation matrix offers a more insightful interpretation of our dataset, facilitating a meaningful reduction in dimensionality and providing valuable insights into the underlying relationships among the features.
+
+### Factor Analysis
+In our investigation of highly correlated features within our dataset, we sought to uncover potential latent factors underlying these correlations. With 11 features, our covariance matrix contains 66 unique entries. Considering a factor model with 2 latent factors, we can reduce the dimensionality of our analysis to 33 parameters, effectively simplifying the interpretation of our data.
+
+
+Using two-factor models derived from principal component analysis (PCA) and maximum likelihood (ML) methods, we examined the factor loadings to identify the latent features associated with our variables. Applying a cutoff of 0.5 for correlation strength, we gained insights into the relationships between the factors and features.
+
+```{r echo=FALSE, results='hide', warning=FALSE, message=FALSE}
+library('psych')
+
+# ML solution of the factor model
+fit <- fa(winequant, nfactors = 2, rotate = "none", 
+                   fm = "ml", residuals = TRUE)
+
+fit$loadings
+# residuals(fit)
+```
+
+From the PCA-based factor analysis:
+- Factor 1 is strongly correlated with volatile acidity (0.663), residual sugar (-0.602), free sulfur dioxide (-0.750), total sulfur dioxide (-0.848), and sulphates (0.512). This latent feature primarily captures variations in these variables.
+- Factor 2 exhibits strong correlations with fixed acidity (0.531), residual sugar (0.521), density (0.922), and alcohol (-0.734), indicating its association with these variables.
+
+```{r echo=FALSE, warning=FALSE, message=FALSE}
+# principal component solution of the factor model
+fit <- principal(winequant, nfactors = 2, rotate = "none", residuals = TRUE)
+
+fit$loadings
+# residuals(fit)
+```
+
+Similarly, from the ML-based factor analysis:
+- Factor 1 shows strong correlations with residual sugar (0.553), density (0.998), and alcohol (-0.688), suggesting that this latent feature primarily represents variations in these variables.
+- Factor 2 is strongly correlated with volatile acidity (-0.509), residual sugar (0.568), free sulfur dioxide (-0.76), and total sulfur dioxide (-0.888), indicating its association with these variables.
+
+In both methods, the residuals are comparable and produce smaller values, indicating satisfactory model fit. Therefore, we can confidently consider the results obtained from either method in this case, facilitating a deeper understanding of the underlying factors driving the correlations among our features.
+
+
+## Grouping or Discrimination
+
+### Test the equality of covariance matrices (red vs white)
+
+```{r echo=FALSE, results='hide', warning=FALSE, message=FALSE}
+g = 2
+p = 11
+
+Sp = matrix(0, nrow = p, ncol = p)
+S = list()
+X_mean = list()
+total_df = 0
+total_inv_df = 0
+wt_sum_logdet_cov = 0
+
+for (i in 1:g) {
+  if (g==1){group_data = red_wine[,c(-12, -13)]}
+  if (g==2){group_data = white_wine[,c(-12, -13)]}
+  
+  m = dim(group_data)[1]
+  X_mean[[i]] = colMeans(group_data)
+  S[[i]] = cov(group_data)
+  
+  total_df = total_df + (m - 1)
+  total_inv_df = total_inv_df + 1 / (m - 1)
+  
+  Sp = Sp + (m - 1) * S[[i]]
+  wt_sum_logdet_cov = wt_sum_logdet_cov + (m - 1) * log(det(S[[i]]))
+}
+
+Sp = Sp / total_df
+M = total_df * log(det(Sp)) - wt_sum_logdet_cov
+u = (total_inv_df - 1 / total_df) * ((2 * p^2 + 3 * p - 1) / (6 * (p + 1) * (g - 1)))
+
+C_obs = (1 - u) * M
+nu = p * (p + 1) * (g - 1) / 2
+p_value = 1 - pchisq(C_obs, df = nu)
+
+if (p_value < 0.05){
+  print(c("p-value =", p_value, "The covariance matrices are not equal"))
+} else {
+  print(c("p-value =", p_value, " The covariance matrices are equal"))
+}
+
+```
+We will now try to find a way to classify our wines between red and white based on their chemical properties and composition and on their quality score.
+
+To chose between a linear or quadratic discriminant analysis approach (lda or qda), we started by checking if the covariance matrices for each groupe (\textit{red} or \textit{white}) were equal. To do so, we performed the following test: $H_0$: $\sum_{white.wine} = \sum_{red.wine}$ against $H_1$: $\sum_{white.wine} \neq \sum_{red.wine}$.
+Define the Box's M test statistic $M =-2ln(\Lambda) $ (where $\Lambda$ is the likelihood ration test statistics) and $u = [ \sum_{l=1}^{g}\frac{1}{n_l - 1} -\frac{1}{\sum_{l=1}^{2} (n_l - 1)}][\frac{2p^2+3p-1}{6(p+1)(g-1)}]$ where p=11 (number of predictors) and g = 2 (number of classes), we know that $(1-u)M\overset{H_0}{\sim}\chi_{p(p+1)(g-1)/2}^2 = \chi_{66}^2 $ is our test statistic.
+The resulting p-value is 1, thus, we fail to reject $H_0$: the data does not provide evidence going against the equality of the means (with confidence level higher than 95\%). Therefore, a lda model would be more appropriate in this situation. 
+
+### LDA 
+```{r echo=FALSE, results='hide', warning=FALSE, message=FALSE}
+winedata$wine_type <- as.factor(ifelse(winedata$wine_type == "red", 1, 0))
+levels(winedata$wine_type)
+t = nrow(winedata)*0.8 #train sample size
+test_ind = sample(nrow(winedata), t) #test indices
+
+wine_train <- winedata[test_ind, ]
+
+wine_validation <- winedata[-test_ind, ]
+
+```
+wine_type is a binary variable and, for analysis purpose, we code wine_type as follows: red = 1, white = 0. This conversion is made within the dataset before fitting the model.
+Moreover, to evaluate the performance of our model, we selected a random sample containing 80\% of the wine data that will be used as a training set (wine_train) and the other 20\% will be used as a validation set (wine_validation). This will allow us to use cross validation. 
+Because we only need quantitative data for these analysis, we will not consider \textit{quality} as a predictor.
+
+```{r echo=FALSE,  warning=FALSE, message=FALSE}
+lda.wine = lda(wine_type ~.,data=wine_train[,c(-12)], CV = T)
+cross_tab = table(wine_train$wine_type,lda.wine$class)
+diag(prop.table(cross_tab,1))
+sum(diag(prop.table(cross_tab)))
+```
+After building the model, we want to evaluate its performance in two ways. 
+First, we want to check that it performs well in predicting the data that have been used to build it (wine_train). When generating the cross validation matrix, we can see that more than 99\% of white wines and more than 98\% of red wines were correctly classified. On average, more than 99\% of all predictions were correct.
+Even though these results are very high, we might fear that such good results could be due to overfitting ; that is the reason why we also need to check its performance on the validation set. 
+
+```{r echo=FALSE, results='hide', warning=FALSE, message=FALSE}
+lda.wine = lda(wine_type ~.,data=wine_train[,c(-12)]);
+lda_pred = predict(lda.wine, wine_validation)
+cross_tab = table(wine_validation$wine_type,lda_pred$class)
+diag(prop.table(cross_tab,1))
+sum(diag(prop.table(cross_tab)))
+
+```
+Surprisingly, on new data, the lda model performs even better. More than 99\% of the predictions made on both red and white wines are correct and, thus, on average, almost all predictions are also correct.
+
+### QDA
+
+```{r echo=FALSE, warning=FALSE, message=FALSE}
+
+qda.wine = qda(wine_type ~.,data=wine_train[,c(-12)], CV = T);
+
+cross_tab = table(wine_train$wine_type,qda.wine$class)
+diag(prop.table(cross_tab,1))
+sum(diag(prop.table(cross_tab)))
+
+qda.wine = qda(wine_type ~.,data=wine_train[,c(-12)]);
+
+qda_pred = predict(qda.wine, wine_validation)
+cross_tab = table(wine_validation$wine_type,qda_pred$class)
+diag(prop.table(cross_tab,1))
+sum(diag(prop.table(cross_tab)))
+```
+Even though the linear separation was very satisfying and seemed to be the most appropriate, we might want to check if a quadratic discriminant analysis would also be able to capture the limit between the two categories. 
+
+The performance are still very good: between 98 and 99\% of the predictions are correct on both white and red wines, when the predictions are made on the training dataset and it goes over 99\% with red wine, when the validation set is used.
+On average, the qda model is correct 98\% of the time. This is a highly satisfying result too.
+
+Since we have to make a choice between the two, however, we will select the lda model: not only does it performs better (even though the difference is not substancial), it is also simpler and more appropriate with the data. Indeed, we showed that the red_wine and white_wine covariance matrices, which is also a sign that the lda model is a better choice. 
+
+
+### Cluster Analysis
+#### Hierarchal Clustering
 In this paper, hierarchical clustering analysis was performed on a dataset comprising various chemical properties of wine. The analysis utilized four different linkage methods—single, complete, average, and median—to explore the natural groupings of the variables based on their correlations. This section will discuss the results depicted in the deprograms generated by each linkage method.
 
 ```{r echo=FALSE, results='hide', warning=FALSE, message=FALSE}
@@ -189,7 +467,7 @@ corr_vals = cor(wine[,1:11]);
 util_dist_mat = as.dist((1 - corr_vals)/2);
 ```
 
-##### 1.Single Linkage (Minimum Linkage)
+**Single Linkage (Minimum Linkage)**
 In the single linkage method, the distance between two clusters is defined as the minimum distance between any single member of one cluster to any single member of the other cluster. This method tends to produce long, 'stringy' clusters. These clusters can sometimes be sensitive to outliers and may not perform well if the natural clusters are not well separated by distance.
 ```{r echo=FALSE}
 util_single_clust = hclust(util_dist_mat,method="single");
@@ -197,7 +475,7 @@ plot(util_single_clust);
 ```
 The dendrogram obtained from the single linkage method exhibits a distinct pattern where certain variables, such as 'alcohol' and 'pH', are the last to join the main cluster. This indicates that these variables have a less strong linear relationship with the other chemical properties in the dataset. Single linkage is known for its tendency to create 'chains' where clusters can merge at substantially different levels of similarity. This is observed in the significant height at which the 'alcohol' and 'pH' join, suggesting these properties behave quite differently from the others or might be influenced by different factors in the winemaking process.
 
-##### 2. Complete Linkage (Maximum Linkage)
+**Complete Linkage (Maximum Linkage)**
 The complete linkage method defines the distance between two clusters as the maximum distance between any member of one cluster to any member of the other cluster. This method tends to find compact clusters of approximately equal diameter. It is less susceptible to noise and outliers compared to single linkage.
 
 ```{r echo=FALSE}
@@ -207,7 +485,7 @@ plot(util_single_clust);
 In contrast, the complete linkage dendrogram shows a more balanced hierarchical structure. The variables 'density' and 'chlorides' form one of the initial clusters, while 'fixed acidity', 'citric acid', and 'alcohol' cluster together at a higher level. This suggests that 'density' and 'chlorides' share a similar profile regarding their influence on wine characteristics. Complete linkage avoids the chaining effect seen in single linkage, indicating that 'fixed acidity', 'citric acid', and 'alcohol' might share a unique relationship distinct from other variables, potentially in how they contribute to the flavor profile of the wine.
 
 
-##### 3. Average Linkage (Mean Linkage)
+**3. Average Linkage (Mean Linkage)**
 The average linkage method defines the distance between two clusters as the average distance between each member of one cluster to every member of the other cluster. It provides a balance between the sensitivity of the single linkage to outliers and the tendency of complete linkage to force clusters to be compact.
 
 ```{r echo=FALSE}
@@ -216,7 +494,7 @@ plot(util_single_clust);
 ```
 The average linkage dendrogram presents a more balanced clustering approach, where the clusters form at intermediate levels of similarity. This method mitigates the influence of outliers and does not force clusters to be overly compact. The cluster comprising 'fixed acidity', 'citric acid', and 'free sulfur dioxide' indicates that these variables may be moderately related, contributing to a common characteristic of the wine, such as its balance between tartness and preservability.
 
-##### 4. Median Linkage
+**4. Median Linkage**
 Median linkage uses the median distance between elements of the two clusters. It's a less common method but can sometimes provide a balance that is not as tight as complete linkage and less sensitive to outliers than single linkage.
 
 ```{r echo=FALSE}
@@ -228,7 +506,7 @@ Finally, the median linkage dendrogram is relatively similar to the average link
 Across all dendrograms, there are consistent patterns worth noting. 'Alcohol' and 'pH' often appear as outliers, suggesting they have unique roles in wine chemistry not closely related to other measured variables. Conversely, 'fixed acidity', 'citric acid', and 'density' frequently cluster together, which may indicate their combined influence on the acidity and body of the wine.
 
 The results revealed by these hierarchical clustering analyses offer valuable insights into the relationships between the chemical properties of wine. Such information could be instrumental in the field of oenology for improving wine quality control and enhancing production processes. 
-#### 2. Kmeans
+#### Kmeans
 This part includes a segment on the application of K-means clustering to a wine dataset, which contains various chemical attributes of wines and their types (red and white). K-means clustering was performed with the goal of dividing the dataset into clusters that capture inherent groupings based on the wines' chemical properties.
 
 ```{r echo=FALSE, results='hide', warning=FALSE, message=FALSE}
@@ -250,7 +528,7 @@ This cross-tabulation reveals distinct patterns:
 
 The clustering results suggest that the inherent chemical characteristics captured in the dataset do align, to some extent, with the traditional wine type classifications of red and white. It is interesting to note that while there is a clear majority of one type of wine in each cluster, there is also representation from the other type. This suggests that the conventional dichotomy between red and white wines may not fully capture the complexity of wine chemistry.
 
-## c. Canonical Correlation Analysis(Jiali)
+## Canonical Correlation Analysis
 
 ```{r echo=FALSE, results='hide', warning=FALSE, message=FALSE}
 library(CCA);
@@ -411,9 +689,205 @@ Subsequent variates display moderate to negligible correlations, indicating less
 
 This Canonical Correlation Analysis highlights important relationships between the sugar and sulfur dioxide properties of wine and its other chemical characteristics, particularly the strong link between wine sweetness and its physical density. These insights can inform more nuanced approaches to balancing these properties in wine production, enhancing both preservation and sensory qualities.
 
-## d. Prediction or classification (Maddie)
-## Logistic regression (chapter 11)
-### Multivariate Regression
+## Prediction or classification
+### Logistic regression
+```{r echo=FALSE, results='hide', warning=FALSE, message=FALSE}
 
-## e. Hypothesis construction and testing (Jarrad)
-### one-way MANOVA
+winedata <- rbind(red_wine, white_wine)
+
+winedata$wine_type <- ifelse(winedata$wine_type == "red", 1, 0)
+winedata$wine_type <- as.factor(winedata$wine_type)
+
+lg.wine_type = glm(wine_type ~ volatile.acidity + citric.acid 
+             + residual.sugar + chlorides + free.sulfur.dioxide + 
+               total.sulfur.dioxide + density + sulphates + alcohol 
+             + quality, family = binomial(link ="logit"), data = winedata)
+lg.wine_type = glm(wine_type ~ ., family = binomial(link ="logit"), data = winedata)
+summary(lg.wine_type)
+
+
+```
+As previously stated, wine_type is a categorical variable, which can take the two following values: white or red. 
+In order to predict the type of a certain wine based on its chemical composition and properties, we fit a logistic regression model. It is appropriate since wine_type is a binary variable. Because the result of such a model implicitly depends on a probability score, which will be rounded to the closest between 0 and 1, we coded wine_type as follows: red = 1, white = 0. This conversion was made within the dataset before fitting the model.
+$$ $$
+We have no previously held knowledge or method that would have permitted us to identify which variables were the most influencial in this situation. Therefore, we first fitted a model that contained all possible predictors. The Student tests performed on each of their associated coefficients indicated that the data showed no evidence that the ones associated to \textit{pH} and \textit{fixed.acidity} would not be zero (their p-values were, respectively, 0.1689 and 0.0861, which is higher than 0.05). This implies that these variables do not have a significant impact on the outcome, with 95\% confidence ; thus, they could easily be removed from the model. However, these tests are performed individually for each coefficients, hence, we cannot remove both of them at once, since their impact could be changed by the absence of the other. The p-value for the coefficient associated to \textit{pH} was higher, indicating a lower significance, therefore, it is the one that we chose to remove first.
+When the second model was fitted (with all possible predictors but \textit{pH}), fixed.acidity was still not significant (for its coefficient, the Student test's p-value was 0.2985>0.05). We then removed it and fitted a new model without \textit{pH} nor \textit{fixed.acidity}.
+
+Now, note $f(X) = -1645 + 7.10X_2 - 2.83 X_3 - 0.871 X_4 + 24.3 X_5 + 0.0586 X_6 - 0.0522 X_7 + 1636 X_8 + 3.06 X_{10} + 1.56 X{11} + 0.410 X_{12}$. We are trying to predict $Y = X_{13}$, thus, our final model is:
+$Y = \mathbb{1}_{f(X)>0.5}$.
+
+### Multivariate Regression
+```{r echo=FALSE, results='hide', warning=FALSE, message=FALSE}
+wine.quant = winedata[,c(-13)]
+
+#BIC backward model selection
+step(lm(quality ~ ., data = wine.quant), direction = "backward",
+     k=log(nrow(wine.quant)))
+
+#fit the selected model
+fit.wine = lm(formula = quality ~ fixed.acidity + volatile.acidity + residual.sugar + 
+    free.sulfur.dioxide + total.sulfur.dioxide + density + pH + 
+    sulphates + alcohol, data = wine.quant)
+summary(fit.wine)
+```
+We now want to fit a model to predict a wine's quality score $X_{12}$ based on its chemicals properties and composition.
+Quality is, in essence a qualitative variable, since it can only take integer values between 0 and 10. However, the range is large enough so we can consider it quantitative. When it comes to prediction, it would even allow for fraction of points, which would be useful in prediction: wine producers would be able to know how far they are from a certain score whereas consumers would know if a wine is in lower or higher range of the said score. 
+
+Considering quality as a qualitative variable is also practical for us to chose a model to fit to our data. Indeed, we will try to predict \textit{quality} with multivariate regression. Since we want the predictors to be only quantitative as well, we removed \textit{wine_type} upfront, since it is binary. Then, we will use the BOC model selection algorithm in order to remove insignificant predictors and select the ones that would maximize the likelihood function associated to $X_{13}$. The BIC penalizes large models, to avoid the risk of overparametrization, which is also useful in our case, since we have 13 parameters.
+This time, we want to predict  $Y = X_{12}$
+In the end, the chosen model is $Y = 60 + 0.066 X_1 -1.30 X_2 + 0.045 X_4 + 0.0059 X_6 - 0.0025 X_7 - 0.59 X_8+ 0.48 X_9 + 0.74 X_{10} + 0.26 X_{11}$.
+
+After displaying the summary for this model, we confirm that all parameters are indeed significant at level 95\% (from the Student tests) and that, overall, it demonstrate strong performance compared to a constant model (small Fisher test p-value). The adjusted R-squared, however, is low (only 0.2906). We tried improving the model by adding or removing parameters, but we were never able to improve this indicator. 
+
+## Hypothesis construction and testing
+### Correlation matrix
+```{r echo=FALSE, results='hide', warning=FALSE, message=FALSE}
+
+subset_winedata <- wine2[, 1:11]
+cor_matrix <- cor(subset_winedata)
+
+# Melt the correlation matrix for ggplot2
+cor_melted <- melt(cor_matrix)
+
+# Create the heatmap
+heatmap <- ggplot(cor_melted, aes(Var1, Var2, fill = value)) +
+  geom_tile() + # This creates the heatmap squares
+  scale_fill_gradient2(low = "blue", high = "red", mid = "white", 
+                       midpoint = 0, limit = c(-1,1), space = "Lab", 
+                       name="Correlation") +
+  geom_text(aes(label = sprintf("%.2f", value)), color = "black", size = 3) +
+  theme_minimal() + # Clean theme
+  theme(axis.text.x = element_text(angle = 45, hjust = 1), # Rotate x axis labels
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank())
+
+# Print the heatmap
+print(heatmap)
+```
+
+Total sulphur dioxide and free sulphur dioxide show a very strong positive correlation of 0.72. Alcohol and density show strong negative correlation of 0.69. Density and residual sugar also show strong correlation.
+
+
+```{r echo=FALSE, results='hide', warning=FALSE, message=FALSE}
+
+test_types <- c("Wilks", "Hotelling-Lawley", "Roy", "Pillai")
+
+response <- c("fixed.acidity", "volatile.acidity", "citric.acid",
+              "residual.sugar", "chlorides", "free.sulfur.dioxide", 
+              "total.sulfur.dioxide", "density", "pH", "sulphates",
+              "alcohol")
+```
+
+In our analysis, we explore the impact of two key factors—wine quality and wine type—on our dataset. Wine quality comprises seven distinct populations, while wine type encompasses two populations. Initially, we conduct individual one-way MANOVA analyses for each factor, followed by a comprehensive examination using two-way MANOVA, incorporating both variables simultaneously. 
+
+Our investigation employs the entirety of the 11 features available in our dataset as response variables. At each stage of our analysis, we rigorously assess significance levels at $5\%$, ensuring robustness and reliability in our findings.
+
+### MANOVA
+
+```{r echo=FALSE, warning=FALSE, message=FALSE}
+fit <- manova(cbind(fixed.acidity,volatile.acidity,
+                    citric.acid, residual.sugar,
+                    chlorides, free.sulfur.dioxide,
+                    total.sulfur.dioxide, density, pH,
+                    sulphates, alcohol) ~ wine_type, data = wine2);
+
+for(test_type in test_types) {
+  cat("Summary for test type:", test_type, "\n")
+  print(summary(fit, test = test_type))
+  cat("\n")
+}
+```
+
+In our one-way MANOVA analysis, we aimed to discern whether there exists statistically significant evidence indicating variations in all 11 mean responses between the two distinct wine populations: red and white wines. Consequently, our null hypothesis posited that these two wine type populations exhibit no variance.
+
+Our investigation utilized four different tests—Wilks, Hotelling-Lawley, Roy, and Pillai—to evaluate the hypothesis. Remarkably, all four tests yielded an identical p-value of $2.2×10^{-16}$. This uniformity in results is unsurprising, given our focus on only two populations in this context.
+
+Therefore, based on our findings, we confidently assert that at least one of the 11 mean responses under consideration differs significantly between the two wine populations examined.
+
+```{r echo=FALSE, results='hide', warning=FALSE, message=FALSE}
+for(var in response) {
+  fit <- aov(formula(paste(var, "~ wine_type")), data = wine2)
+  cat("Summary when response is", var, "\n")
+  print(summary(fit))
+}
+```
+
+Following our initial findings, we conducted further investigation to identify which of the 11 response variables contributed to the observed differences between the two wine populations. To accomplish this, we performed individual univariate analyses for each response variable, utilizing the Pillai test.
+
+Remarkably, all 11 tests yielded significant results, indicating substantial differences across the various response variables. Notably, while the p-value for alcohol slightly deviated $(0.00787)$, all other tests produced a consistent p-value of $2×10^{-16}$.
+
+In light of these outcomes, we confidently conclude that each mean response significantly varies between the two wine populations, underscoring the diverse characteristics and attributes associated with red and white wines.
+
+```{r echo=FALSE, warning=FALSE, message=FALSE}
+
+# one-way MANOVA
+fit <- manova(cbind(fixed.acidity,volatile.acidity,
+                    citric.acid, residual.sugar,
+                    chlorides, free.sulfur.dioxide,
+                    total.sulfur.dioxide, density, pH,
+                    sulphates, alcohol) ~ factor(quality), data = wine2)
+
+for(test_type in test_types) {
+  cat("Summary for test type:", test_type, "\n")
+  print(summary(fit, test = test_type))
+  cat("\n")
+}
+
+```
+
+In our subsequent analysis, we conducted a one-way MANOVA considering all 11 response variables collectively, with wine quality serving as the primary factor. Our null hypothesis posited that the seven wine quality populations exhibit no variation.
+
+Upon evaluation using four different tests—Wilks, Hotelling-Lawley, Roy, and Pillai—we obtained significant results, with a p-value of $2.2×10^{-6}$ across all tests. This consistent significance underscores the presence of substantial differences among the wine quality populations in terms of the mean responses for at least one of the 11 variables examined.
+
+In light of these findings, we assert that there exists variability in the mean responses across the wine quality populations, highlighting the diverse characteristics and attributes associated with different wine quality levels.
+
+
+```{r echo=FALSE, results='hide', warning=FALSE, message=FALSE}
+
+for(var in response) {
+  fit <- aov(formula(paste(var, "~ factor(quality)")), data = wine2)
+  cat("Summary when response is", var, "\n")
+  print(summary(fit))
+}
+```
+
+Continuing our analysis, we conducted univariate one-way MANOVA tests to investigate the specific differences detected in the previous step. Out of the 11 response variables examined, all but one yielded significant results. Notably, for the response variable pH, we did not obtain significant evidence to conclude that at least one of the wine quality populations differs from the rest, with a p-value of $0.0593$.
+
+This observation suggests that while the majority of response variables exhibit significant variations across the wine quality populations, pH does not demonstrate such differences at a statistically significant level. However, it's essential to interpret this result cautiously, considering its proximity to the conventional significance threshold $(\alpha = 0.05)$. Further exploration or additional analyses may be warranted to fully elucidate the role of pH in distinguishing among wine quality populations.
+
+```{r echo=FALSE, warning=FALSE, message=FALSE}
+
+# Two-way MANOVA
+
+fit <- manova(cbind(fixed.acidity,volatile.acidity,
+                    citric.acid, residual.sugar,
+                    chlorides, free.sulfur.dioxide,
+                    total.sulfur.dioxide, density, pH,
+                    sulphates, alcohol) ~ factor(quality)*wine_type, 
+              data =wine2)
+summary(fit) 
+```
+
+In our subsequent analysis, we explored the interaction between two key factors, wine type and wine quality, using a two-way MANOVA approach. Employing the Pillai test, our analysis revealed a significant interaction effect between these factors.
+
+The obtained p-value of $2.2×10^{-16}$ indicates strong evidence of interactive effects between wine type and wine quality on the mean response of at least one of the 11 variables examined. This suggests that both wine type and wine quality play crucial roles in influencing the characteristics and attributes represented by these variables, and their combined effects contribute to the overall variability observed in the dataset.
+
+In conclusion, our findings underscore the importance of considering both wine type and wine quality concurrently, as they jointly impact the mean responses of the variables under investigation in an interactive manner.
+
+```{r echo=FALSE, warning=FALSE, message=FALSE}
+# univariate two-way ANOVA
+for(var in response) {
+  fit <- aov(formula(paste(var, "~ wine_type*factor(quality)")), data = wine2)
+  cat("Summary when response is", var, "\n")
+  print(summary(fit))
+}
+```
+
+Following the identification of a significant interaction between wine type and wine quality, we proceeded to conduct univariate two-way MANOVA tests to examine whether this interaction effect manifests consistently across all response variables.
+
+Our analyses revealed that for each of the 11 response variables, except for chlorides (p-value 0.106) and alcohol (p-value 0.56262), significant interaction effects were observed. This indicates that the joint influence of wine type and wine quality varies across most response variables, contributing to the overall variability in the dataset.
+
+In the cases of chlorides and alcohol, however, we found no statistically significant evidence to support the presence of interaction effects. Instead, our results suggest that each factor independently affects the mean responses in an additive manner.
+
+In summary, while the interaction between wine type and wine quality significantly impacts most response variables, the effects may differ across individual variables. Nonetheless, the independent effects of each factor remain discernible in certain cases, emphasizing the complexity of their combined influence on the characteristics of the dataset.
+
