@@ -16,26 +16,6 @@ set.seed(42)
 ## Back ground 
 Wine is a product that can vary in price and in quality ; some varieties are akin to cheap consummers goods while others are luxury products. In that context, it can be hard for consummers to identify which are more appropriate for certain occasions, or which are worth spending more or less money on ; similarly, for producers, the task of setting up a price can be made harder. On both sides, certifications are very important and thus, there is a real need to build trustworthy models to evaluate wines quality: it would bring clarity to consumers and recognition to producers. Moreover, by identifying the most important factors, the latter could turn their focus on these aspects and find more efficient ways to improve their wine's rating.
 
-## Variables
-
-Our project is designed to harness the rich insights of a comprehensive public dataset, featuring detailed attributes and quality assessments of wine samples from Minho, a renowned wine-producing region in north-west Portugal. The dataset encompasses an extensive period of data collection, from May 2004 to February 2007, and includes an impressive total of 6,498 records related to both red and white wine variants, dissected across 11 key attributes. This meticulous compilation offers an unparalleled opportunity to delve into the nuances that distinguish wine quality, presenting a foundation for robust analysis and potential advancements in wine science. The dataset provides a granular look at the chemical composition and sensory attributes of wine, each variable casting light on its potential impact on overall quality. These attributes include:
-
-    Fixed Acidity ($X_1$, numeric): Reflects the concentration of nonvolatile acids (such as tartaric acid) that remain fixed during winemaking and contribute to the wine's structure.
-    Volatile Acidity ($X_2$, numeric): Measures the volatile acids (like acetic acid), where excessive levels can mar wine with an undesirable vinegar taste.
-    Citric Acid ($X_3$, numeric): Although present in small amounts, citric acid can enhance the wine's freshness and flavor profile.
-    Residual Sugar ($X_4$, numeric): Indicates the sugar level post-fermentation, affecting sweetness.
-    Chlorides ($X_5$, numeric): The measure of salt content in wine, impacting taste.
-    Free Sulfur Dioxide ($X_6$, numeric): Represents the portion of sulfur dioxide not bound to other molecules, crucial for preserving wine's freshness and inhibiting microbial growth.
-    Total Sulfur Dioxide ($X_7$, numeric): The total concentration of sulfur dioxide, encompassing both free and bound forms, essential for wine longevity.
-    Density ($X_8$, numeric): Reflects the wine's density, which correlates with its alcohol and sugar content.
-    pH ($X_9$, numeric): A vital indicator of acidity, influencing taste, color, and stability.
-    Sulphates ($X_{10}$, numeric): Pertains to added sulphates like potassium sulphate, affecting microbial stability and antioxidant properties.
-    Alcohol ($X_{11}$, numeric): The alcohol percentage, directly influencing flavor and body.
-    Quality ($X_{12}$, discrete): An assessment of wine quality on a scale from 0 to 10, based on sensory evaluation.
-    Wine Type ($X_{13}$, categorical): Distinguishes between red and white wine variants.
-
-By exploring these attributes, our project aims not only to dissect the complex interplay of factors influencing wine quality but also to contribute valuable insights to the wine industry, enhancing our understanding of what makes a wine stand out.
-
 ```{r}
 red_wine <- read.csv("winequality-red.csv", sep = ";") 
 white_wine <- read.csv("winequality-white.csv", sep = ";")
@@ -68,7 +48,7 @@ By exploring these attributes, our project aims not only to dissect the complex 
 
 # EDA of Data
 # Data Normalization
-## 1. univariate normality
+## univariate normality
 ```{r}
 check_normality <- function(data, var) {
   test_result <- lillie.test(data[[var]])
@@ -198,127 +178,77 @@ write.csv(wine1, "wine1.csv", row.names = FALSE)
 ### FA
 
 ## b. Grouping or Discrimination
-
-### Covariance matrix comparison
-```{r echo=FALSE, results='hide', warning=FALSE, message=FALSE}
-g = 2
-p = 11
-
-Sp = matrix(0, nrow = p, ncol = p)
-S = list()
-X_mean = list()
-total_df = 0
-total_inv_df = 0
-wt_sum_logdet_cov = 0
-
-for (i in 1:g) {
-  if (g==1){group_data = red_wine[,c(-12, -13)]}
-  if (g==2){group_data = white_wine[,c(-12, -13)]}
-  
-  m = dim(group_data)[1]
-  X_mean[[i]] = colMeans(group_data)
-  S[[i]] = cov(group_data)
-  
-  total_df = total_df + (m - 1)
-  total_inv_df = total_inv_df + 1 / (m - 1)
-  
-  Sp = Sp + (m - 1) * S[[i]]
-  wt_sum_logdet_cov = wt_sum_logdet_cov + (m - 1) * log(det(S[[i]]))
-}
-
-Sp = Sp / total_df
-M = total_df * log(det(Sp)) - wt_sum_logdet_cov
-u = (total_inv_df - 1 / total_df) * ((2 * p^2 + 3 * p - 1) / (6 * (p + 1) * (g - 1)))
-
-C_obs = (1 - u) * M
-nu = p * (p + 1) * (g - 1) / 2
-p_value = 1 - pchisq(C_obs, df = nu)
-
-if (p_value < 0.05){
-  print(c("p-value =", p_value, "The covariance matrices are not equal"))
-} else {
-  print(c("p-value =", p_value, " The covariance matrices are equal"))
-}
-
-```
-We will now try to find a way to classify our wines between red and white based on their chemical properties and composition and on their quality score.
-
-To chose between a linear or quadratic discriminant analysis approach (lda or qda), we started by checking if the covariance matrices for each groupe (\textit{red} or \textit{white}) were equal. To do so, we performed the following test: $H_0$: $\sum_{white.wine} = \sum_{red.wine}$ against $H_1$: $\sum_{white.wine} \neq \sum_{red.wine}$.
-Define the Box's M test statistic $M =-2ln(\Lambda) $ (where $\Lambda$ is the likelihood ration test statistics) and $u = [ \sum_{l=1}^{g}\frac{1}{n_l - 1} -\frac{1}{\sum_{l=1}^{2} (n_l - 1)}][\frac{2p^2+3p-1}{6(p+1)(g-1)}]$ where p=11 (number of predictors) and g = 2 (number of classes), we know that $(1-u)M\overset{H_0}{\sim}\chi_{p(p+1)(g-1)/2}^2 = \chi_{66}^2 $ is our test statistic.
-The resulting p-value is 1, thus, we fail to reject $H_0$: the data does not provide evidence going against the equality of the means (with confidence level higher than 95\%). Therefore, a lda model would be more appropriate in this situation. 
-### LDA 
-```{r echo=FALSE, results='hide', warning=FALSE, message=FALSE}
-winedata$wine_type <- as.factor(ifelse(winedata$wine_type == "red", 1, 0))
-levels(winedata$wine_type)
-t = nrow(winedata)*0.8 #train sample size
-test_ind = sample(nrow(winedata), t) #test indices
-
-wine_train <- winedata[test_ind, ]
-
-wine_validation <- winedata[-test_ind, ]
-
-```
-wine_type is a binary variable and, for analysis purpose, we code wine_type as follows: red = 1, white = 0. This conversion is made within the dataset before fitting the model.
-Moreover, to evaluate the performance of our model, we selected a random sample containing 80\% of the wine data that will be used as a training set (wine_train) and the other 20\% will be used as a validation set (wine_validation). This will allow us to use cross validation. 
-Because we only need quantitative data for these analysis, we will not consider \textit{quality} as a predictor.
-```{r echo=FALSE, results='hide', warning=FALSE, message=FALSE}
-
-lda.wine = lda(wine_type ~.,data=wine_train[,c(-12)], CV = T)
-cross_tab = table(wine_train$wine_type,lda.wine$class)
-diag(prop.table(cross_tab,1))
-sum(diag(prop.table(cross_tab)))
-```
-After building the model, we want to evaluate its performance in two ways. 
-First, we want to check that it performs well in predicting the data that have been used to build it (wine_train). When generating the cross validation matrix, we can see that more than 99\% of white wines and more than 98\% of red wines were correctly classified. On average, more than 99\% of all predictions were correct.
-Even though these results are very high, we might fear that such good results could be due to overfitting ; that is the reason why we also need to check its performance on the validation set. 
-
-```{r echo=FALSE, results='hide', warning=FALSE, message=FALSE}
-lda.wine = lda(wine_type ~.,data=wine_train[,c(-12)]);
-lda_pred = predict(lda.wine, wine_validation)
-cross_tab = table(wine_validation$wine_type,lda_pred$class)
-diag(prop.table(cross_tab,1))
-sum(diag(prop.table(cross_tab)))
-
-```
-Surprisingly, on new data, the lda model performs even better. More than 99\% of the predictions made on both red and white wines are correct and, thus, on average, almost all predictions are also correct.
-
-### QDA 
-
-```{r echo=FALSE, results='hide', warning=FALSE, message=FALSE}
-
-qda.wine = qda(wine_type ~.,data=wine_train[,c(-12)], CV = T);
-
-cross_tab = table(wine_train$wine_type,qda.wine$class)
-diag(prop.table(cross_tab,1))
-sum(diag(prop.table(cross_tab)))
-
-qda.wine = qda(wine_type ~.,data=wine_train[,c(-12)]);
-
-qda_pred = predict(qda.wine, wine_validation)
-cross_tab = table(wine_validation$wine_type,qda_pred$class)
-diag(prop.table(cross_tab,1))
-sum(diag(prop.table(cross_tab)))
-```
-Even though the linear separation was very satisfying and seemed to be the most appropriate, we might want to check if a quadratic discriminant analysis would also be able to capture the limit between the two categories. 
-
-The performance are still very good: between 98 and 99\% of the predictions are correct on both white and red wines, when the predictions are made on the training dataset and it goes over 99\% with red wine, when the validation set is used.
-On average, the qda model is correct 98\% of the time. This is a highly satisfying result too.
-
-Since we have to make a choice between the two, however, we will select the lda model: not only does it performs better (even though the difference is not substancial), it is also simpler and more appropriate with the data. Indeed, we showed that the red_wine and white_wine covariance matrices, which is also a sign that the lda model is a better choice. 
+### LDA (chapter 11) (Maddie)
+### QDA (chapter 11) (Maddie)
 ### Cluster Analysis (Jiali)
-#### 1. Kmeans
-```{r}
+#### 1. Hierarchal Clustering
+In this paper, hierarchical clustering analysis was performed on a dataset comprising various chemical properties of wine. The analysis utilized four different linkage methods—single, complete, average, and median—to explore the natural groupings of the variables based on their correlations. This section will discuss the results depicted in the deprograms generated by each linkage method.
+
+```{r echo=FALSE, results='hide', warning=FALSE, message=FALSE}
+corr_vals = cor(wine[,1:11]);
+util_dist_mat = as.dist((1 - corr_vals)/2);
+```
+
+##### 1.Single Linkage (Minimum Linkage)
+In the single linkage method, the distance between two clusters is defined as the minimum distance between any single member of one cluster to any single member of the other cluster. This method tends to produce long, 'stringy' clusters. These clusters can sometimes be sensitive to outliers and may not perform well if the natural clusters are not well separated by distance.
+```{r echo=FALSE}
+util_single_clust = hclust(util_dist_mat,method="single");
+plot(util_single_clust);
+```
+The dendrogram obtained from the single linkage method exhibits a distinct pattern where certain variables, such as 'alcohol' and 'pH', are the last to join the main cluster. This indicates that these variables have a less strong linear relationship with the other chemical properties in the dataset. Single linkage is known for its tendency to create 'chains' where clusters can merge at substantially different levels of similarity. This is observed in the significant height at which the 'alcohol' and 'pH' join, suggesting these properties behave quite differently from the others or might be influenced by different factors in the winemaking process.
+
+##### 2. Complete Linkage (Maximum Linkage)
+The complete linkage method defines the distance between two clusters as the maximum distance between any member of one cluster to any member of the other cluster. This method tends to find compact clusters of approximately equal diameter. It is less susceptible to noise and outliers compared to single linkage.
+
+```{r echo=FALSE}
+util_single_clust = hclust(util_dist_mat,method="complete");
+plot(util_single_clust);
+```
+In contrast, the complete linkage dendrogram shows a more balanced hierarchical structure. The variables 'density' and 'chlorides' form one of the initial clusters, while 'fixed acidity', 'citric acid', and 'alcohol' cluster together at a higher level. This suggests that 'density' and 'chlorides' share a similar profile regarding their influence on wine characteristics. Complete linkage avoids the chaining effect seen in single linkage, indicating that 'fixed acidity', 'citric acid', and 'alcohol' might share a unique relationship distinct from other variables, potentially in how they contribute to the flavor profile of the wine.
+
+
+##### 3. Average Linkage (Mean Linkage)
+The average linkage method defines the distance between two clusters as the average distance between each member of one cluster to every member of the other cluster. It provides a balance between the sensitivity of the single linkage to outliers and the tendency of complete linkage to force clusters to be compact.
+
+```{r echo=FALSE}
+util_single_clust = hclust(util_dist_mat,method="average");
+plot(util_single_clust);
+```
+The average linkage dendrogram presents a more balanced clustering approach, where the clusters form at intermediate levels of similarity. This method mitigates the influence of outliers and does not force clusters to be overly compact. The cluster comprising 'fixed acidity', 'citric acid', and 'free sulfur dioxide' indicates that these variables may be moderately related, contributing to a common characteristic of the wine, such as its balance between tartness and preservability.
+
+##### 4. Median Linkage
+Median linkage uses the median distance between elements of the two clusters. It's a less common method but can sometimes provide a balance that is not as tight as complete linkage and less sensitive to outliers than single linkage.
+
+```{r echo=FALSE}
+util_single_clust = hclust(util_dist_mat,method="median");
+plot(util_single_clust);
+```
+Finally, the median linkage dendrogram is relatively similar to the average linkage dendrogram but with slight variations. For instance, 'citric acid' appears closer to 'fixed acidity', suggesting that these variables may share a median level of similarity that is more pronounced than what is captured by average linkage. This can be interpreted as 'citric acid' having a more central role in relation to 'fixed acidity' in terms of their joint effect on wine properties.
+
+Across all dendrograms, there are consistent patterns worth noting. 'Alcohol' and 'pH' often appear as outliers, suggesting they have unique roles in wine chemistry not closely related to other measured variables. Conversely, 'fixed acidity', 'citric acid', and 'density' frequently cluster together, which may indicate their combined influence on the acidity and body of the wine.
+
+The results revealed by these hierarchical clustering analyses offer valuable insights into the relationships between the chemical properties of wine. Such information could be instrumental in the field of oenology for improving wine quality control and enhancing production processes. 
+#### 2. Kmeans
+This part includes a segment on the application of K-means clustering to a wine dataset, which contains various chemical attributes of wines and their types (red and white). K-means clustering was performed with the goal of dividing the dataset into clusters that capture inherent groupings based on the wines' chemical properties.
+
+```{r echo=FALSE, results='hide', warning=FALSE, message=FALSE}
 names(wine)
-
-table(wine$quality)
 table(wine$wine_type)
+kmeans_c4_wine = kmeans(wine[,1:11],3,nstart = 100);
+```
+For the clustering process, a decision was made to set the number of clusters (k) to 3. The clustering algorithm was initialized 100 times (`nstart = 100`) to ensure convergence to a good solution.
 
-kmeans_c4_wine = kmeans(wine[,1:11],2,nstart = 100);
-
+Upon applying the K-means algorithm, the dataset was partitioned into three clusters. When cross-tabulating these clusters with the `wine_type` variable, the following distribution was observed:
+```{r echo=FALSE, warning=FALSE, message=FALSE}
 table(wine[,13],kmeans_c4_wine$cluster);
 ```
+This cross-tabulation reveals distinct patterns:
 
+- **Cluster 1** is predominantly composed of red wine, with a significant but smaller proportion of white wine. This cluster may represent wines with a chemical profile more typical of red wines but still present in a subset of white wines.
+- **Cluster 2** consists mainly of white wine, with a few red wines. The properties defining this cluster seem to be closely aligned with those typically found in white wines.
+- **Cluster 3** has a majority of white wine but also includes a minimal number of red wines, possibly indicating a unique subset of white wines that share certain characteristics with some red wines.
 
+The clustering results suggest that the inherent chemical characteristics captured in the dataset do align, to some extent, with the traditional wine type classifications of red and white. It is interesting to note that while there is a clear majority of one type of wine in each cluster, there is also representation from the other type. This suggests that the conventional dichotomy between red and white wines may not fully capture the complexity of wine chemistry.
 
 ## c. Canonical Correlation Analysis(Jiali)
 
@@ -366,7 +296,7 @@ Canonical Correlation Analysis is a multivariate statistical method used to exam
 #### 1. Acidity Levels & Sugar and Sulfur Dioxide
 This analysis aims to explore and quantify the relationships between two critical sets of variables in wine data: **Acidity Levels** (comprising fixed acidity, volatile acidity, citric acid, and pH) and **Sugar and Sulfur Dioxide** (including residual sugar, free sulfur dioxide, and total sulfur dioxide).
 
-```{r echo=FALSE, results='hide'}
+```{r echo=FALSE}
 cc1 = cc(acidity_levels, sugar_sulfur_dioxide);
 cc1$cor;
 cc1[3:4]
@@ -407,7 +337,7 @@ Canonical Correlation Analysis between Acidity Levels and Sugar and Sulfur Dioxi
 #### 2. Acidity Levels & Other Chemical Properties
 The objective of this analysis is to explore and quantify the relationships between two sets of wine-related variables: Acidity Levels (fixed acidity, volatile acidity, citric acid, and pH) and Other Chemical Properties (chlorides, density, sulphates, and alcohol), utilizing Canonical Correlation Analysis (CCA).
 
-```{r echo=FALSE, results='hide'}
+```{r echo=FALSE}
 cc2 = cc(acidity_levels, other_chemical_properties);
 cc2$cor;
 cc2[3:4]
@@ -447,7 +377,7 @@ This Canonical Correlation Analysis has highlighted significant and varied relat
 
 The goal of this analysis is to understand the relationships between two sets of wine-related variables: **Sugar and Sulfur Dioxide** (residual sugar, free sulfur dioxide, total sulfur dioxide) and **Other Chemical Properties** (chlorides, density, sulphates, and alcohol), using Canonical Correlation Analysis.
 
-```{r echo=FALSE, results='hide'}
+```{r echo=FALSE}
 cc3 = cc(sugar_sulfur_dioxide, other_chemical_properties);
 cc3$cor;
 cc3[3:4]
@@ -483,53 +413,7 @@ This Canonical Correlation Analysis highlights important relationships between t
 
 ## d. Prediction or classification (Maddie)
 ## Logistic regression (chapter 11)
-```{r echo=FALSE, results='hide', warning=FALSE, message=FALSE}
-
-winedata <- rbind(red_wine, white_wine)
-
-winedata$wine_type <- ifelse(winedata$wine_type == "red", 1, 0)
-winedata$wine_type <- as.factor(winedata$wine_type)
-
-lg.wine_type = glm(wine_type ~ volatile.acidity + citric.acid 
-             + residual.sugar + chlorides + free.sulfur.dioxide + 
-               total.sulfur.dioxide + density + sulphates + alcohol 
-             + quality, family = binomial(link ="logit"), data = winedata)
-lg.wine_type = glm(wine_type ~ ., family = binomial(link ="logit"), data = winedata)
-summary(lg.wine_type)
-
-
-```
-As previously stated, wine_type is a categorical variable, which can take the two following values: white or red. 
-In order to predict the type of a certain wine based on its chemical composition and properties, we fit a logistic regression model. It is appropriate since wine_type is a binary variable. Because the result of such a model implicitly depends on a probability score, which will be rounded to the closest between 0 and 1, we coded wine_type as follows: red = 1, white = 0. This conversion was made within the dataset before fitting the model.
-$$ $$
-We have no previously held knowledge or method that would have permitted us to identify which variables were the most influencial in this situation. Therefore, we first fitted a model that contained all possible predictors. The Student tests performed on each of their associated coefficients indicated that the data showed no evidence that the ones associated to \textit{pH} and \textit{fixed.acidity} would not be zero (their p-values were, respectively, 0.1689 and 0.0861, which is higher than 0.05). This implies that these variables do not have a significant impact on the outcome, with 95\% confidence ; thus, they could easily be removed from the model. However, these tests are performed individually for each coefficients, hence, we cannot remove both of them at once, since their impact could be changed by the absence of the other. The p-value for the coefficient associated to \textit{pH} was higher, indicating a lower significance, therefore, it is the one that we chose to remove first.
-When the second model was fitted (with all possible predictors but \textit{pH}), fixed.acidity was still not significant (for its coefficient, the Student test's p-value was 0.2985>0.05). We then removed it and fitted a new model without \textit{pH} nor \textit{fixed.acidity}.
-
-Now, note $f(X) = -1645 + 7.10X_2 - 2.83 X_3 - 0.871 X_4 + 24.3 X_5 + 0.0586 X_6 - 0.0522 X_7 + 1636 X_8 + 3.06 X_{10} + 1.56 X{11} + 0.410 X_{12}$. We are trying to predict $Y = X_{13}$, thus, our final model is:
-$Y = \mathbb{1}_{f(X)>0.5}$.
-
 ### Multivariate Regression
-```{r echo=FALSE, results='hide', warning=FALSE, message=FALSE}
-wine.quant = winedata[,c(-13)]
-
-#BIC backward model selection
-step(lm(quality ~ ., data = wine.quant), direction = "backward",
-     k=log(nrow(wine.quant)))
-
-#fit the selected model
-fit.wine = lm(formula = quality ~ fixed.acidity + volatile.acidity + residual.sugar + 
-    free.sulfur.dioxide + total.sulfur.dioxide + density + pH + 
-    sulphates + alcohol, data = wine.quant)
-summary(fit.wine)
-```
-We now want to fit a model to predict a wine's quality score $X_{12}$ based on its chemicals properties and composition.
-Quality is, in essence a qualitative variable, since it can only take integer values between 0 and 10. However, the range is large enough so we can consider it quantitative. When it comes to prediction, it would even allow for fraction of points, which would be useful in prediction: wine producers would be able to know how far they are from a certain score whereas consumers would know if a wine is in lower or higher range of the said score. 
-
-Considering quality as a qualitative variable is also practical for us to chose a model to fit to our data. Indeed, we will try to predict \textit{quality} with multivariate regression. Since we want the predictors to be only quantitative as well, we removed \textit{wine_type} upfront, since it is binary. Then, we will use the BOC model selection algorithm in order to remove insignificant predictors and select the ones that would maximize the likelihood function associated to $X_{13}$. The BIC penalizes large models, to avoid the risk of overparametrization, which is also useful in our case, since we have 13 parameters.
-This time, we want to predict  $Y = X_{12}$
-In the end, the chosen model is $Y = 60 + 0.066 X_1 -1.30 X_2 + 0.045 X_4 + 0.0059 X_6 - 0.0025 X_7 - 0.59 X_8+ 0.48 X_9 + 0.74 X_{10} + 0.26 X_{11}$.
-
-After displaying the summary for this model, we confirm that all parameters are indeed significant at level 95\% (from the Student tests) and that, overall, it demonstrate strong performance compared to a constant model (small Fisher test p-value). The adjusted R-squared, however, is low (only 0.2906). We tried improving the model by adding or removing parameters, but we were never able to improve this indicator. 
 
 ## e. Hypothesis construction and testing (Jarrad)
 ### one-way MANOVA
