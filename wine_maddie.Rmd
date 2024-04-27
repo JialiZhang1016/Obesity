@@ -1,0 +1,520 @@
+---
+title: "Untitled"
+output:
+  pdf_document: default
+  html_document: default
+date: "2024-04-17"
+---
+
+```{r}
+library(ggplot2)
+library(reshape2)
+library(MASS)
+library(nortest)
+
+set.seed(42) 
+
+```
+
+# read data
+```{r}
+red_wine <- read.csv("winequality-red.csv", sep = ";") 
+white_wine <- read.csv("winequality-white.csv", sep = ";")
+# 
+red_wine$wine_type <- 'red'
+white_wine$wine_type <- 'white'
+
+winedata <- rbind(red_wine, white_wine)
+# 
+red_wine_sample <- red_wine[sample(nrow(red_wine), 25), ]
+white_wine_sample <- white_wine[sample(nrow(white_wine), 25), ]
+# 
+
+wine <- rbind(red_wine_sample, white_wine_sample)
+write.csv(wine, "wine.csv", row.names = FALSE)
+
+wine <- read.csv("wine.csv") 
+```
+
+$X_1 =$ fixed acidity
+$X_2 =$ volatile acidity
+$X_3 =$ citric acid
+$X_4 =$ residual sugar
+$X_5 =$ chlorides
+$X_6 =$ free sulfur dioxide
+$X_7 =$ total sulfur dioxide
+$X_8 =$ density
+$X_9 =$ pH
+$X_{10} =$ sulphates
+$X_{11} =$ alcohol
+$X_{12} =$ quality
+$X_{13} =$ wine type
+
+
+# Get to know data
+```{r}
+# dimension of data
+dim(winedata) # 6497 rows x 13 variables
+
+# features in data
+names(winedata) 
+
+```
+
+# Categorical data visualization
+```{r}
+# Comments
+# Most common wine type = white wine
+# Most common quality grade = 6, 5, & 7
+
+# Get the frequency table
+quality_table <- table(winedata$quality)
+type_table <- table(winedata$wine_type)
+
+# View the frequency table
+print(quality_table)
+print(type_table)
+
+
+# barplot
+winedata$quality <- factor(winedata$quality)
+ggplot(winedata, aes(x = quality)) + geom_bar(fill = "skyblue") + 
+  labs(x = "quality", y = "count")
+
+winedata$wine_type <- factor(winedata$wine_type)
+ggplot(winedata, aes(x = wine_type)) + geom_bar(fill = "skyblue") + 
+  labs(x = "type of wine", y = "count")
+```
+
+# Quantitative data visualization 
+
+```{r}
+# Get summary of all variables
+summary(winedata[,1:11])
+```
+
+## histogram
+```{r}
+ggplot(winedata, aes(x = fixed.acidity)) +
+  geom_histogram(color = "white", fill = "skyblue") +
+  labs(x = "fixed acidity", y = "count") + theme_minimal()
+
+ggplot(winedata, aes(x = volatile.acidity)) +
+  geom_histogram(color = "white", fill = "skyblue") +
+  labs(x = "volatile acidity", y = "count") + theme_minimal()
+
+ggplot(winedata, aes(x = citric.acid)) +
+  geom_histogram(color = "white", fill = "skyblue") +
+  labs(x = "citric acid", y = "count") + theme_minimal()
+
+ggplot(winedata, aes(x = residual.sugar)) +
+  geom_histogram(color = "white", fill = "skyblue") +
+  labs(x = "residual sugar", y = "count") + theme_minimal()
+
+ggplot(winedata, aes(x = chlorides)) +
+  geom_histogram(color = "white", fill = "skyblue") +
+  labs(x = "chlorides", y = "count") + theme_minimal()
+
+ggplot(winedata, aes(x = free.sulfur.dioxide)) +
+  geom_histogram(color = "white", fill = "skyblue") +
+  labs(x = "free sulfur dioxide", y = "count") + theme_minimal()
+
+ggplot(winedata, aes(x = total.sulfur.dioxide)) +
+  geom_histogram(color = "white", fill = "skyblue") +
+  labs(x = "total sulfur dioxide", y = "count") + theme_minimal()
+
+ggplot(winedata, aes(x = density)) +
+  geom_histogram(color = "white", fill = "skyblue") +
+  labs(x = " ", y = "count") + theme_minimal()
+
+ggplot(winedata, aes(x = density)) +
+  geom_histogram(color = "white", fill = "skyblue") +
+  labs(x = "density", y = "count") + theme_minimal()
+
+ggplot(winedata, aes(x = pH)) +
+  geom_histogram(color = "white", fill = "skyblue") +
+  labs(x = "pH", y = "count") + theme_minimal()
+
+ggplot(winedata, aes(x = sulphates)) +
+  geom_histogram(color = "white", fill = "skyblue") +
+  labs(x = "sulphates", y = "count") + theme_minimal()
+
+ggplot(winedata, aes(x = alcohol)) +
+  geom_histogram(color = "white", fill = "skyblue") +
+  labs(x = "alcohol", y = "count") + theme_minimal()
+```
+
+## density plots
+```{r}
+ggplot(winedata, aes(x = fixed.acidity)) +
+  geom_density() +
+  labs(title = "Density Plot", x = "fixed acidity") +
+  theme_minimal()
+```
+
+## boxplot
+```{r}
+ggplot(winedata, aes(x = fixed.acidity)) + geom_boxplot() +
+  labs(title = "Box Plot of fixed acidity", x = "fixed acidity") +
+  theme_minimal()
+
+ggplot(winedata, aes(x = volatile.acidity)) + geom_boxplot() +
+  labs(title = "Box Plot of volatile.acidity", x = "volatile.acidity") + theme_minimal()
+
+ggplot(winedata, aes(x = citric.acid)) + geom_boxplot() +
+  labs(title = "Box Plot of citric.acid", x = "citric.acid") + theme_minimal()
+
+ggplot(winedata, aes(x = residual.sugar)) + geom_boxplot() +
+  labs(title = "Box Plot of residual.sugar", x = "residual.sugar") + theme_minimal()
+
+ggplot(winedata, aes(x = chlorides)) + geom_boxplot() +
+  labs(title = "Box Plot of chlorides", x = "chlorides") + theme_minimal()
+
+ggplot(winedata, aes(x = free.sulfur.dioxide)) + geom_boxplot() +
+  labs(title = "Box Plot of free.sulfur.dioxide", x = "free.sulfur.dioxide") + theme_minimal()
+
+ggplot(winedata, aes(x = total.sulfur.dioxide)) + geom_boxplot() +
+  labs(title = "Box Plot of total sulfur dioxide", x = "total.sulfur.dioxide") + theme_minimal()
+
+ggplot(winedata, aes(x = density)) + geom_boxplot() +
+  labs(title = "Box Plot of density", x = "density") + theme_minimal()
+
+ggplot(winedata, aes(x = pH)) + geom_boxplot() +
+  labs(title = "Box Plot of pH", x = "pH") + theme_minimal()
+
+ggplot(winedata, aes(x = sulphates)) + geom_boxplot() +
+  labs(title = "Box Plot of sulphates", x = "sulphates") + theme_minimal()
+
+ggplot(winedata, aes(x = alcohol)) + geom_boxplot() +
+  labs(title = "Box Plot of alcohol", x = "alcohol") + theme_minimal()# Correlation matrix
+```
+
+# correlation matrix
+```{r}
+subset_winedata <- winedata[, 1:11]
+cor_matrix <- cor(subset_winedata)
+
+# Melt the correlation matrix for ggplot2
+cor_melted <- melt(cor_matrix)
+
+# Create the heatmap
+heatmap <- ggplot(cor_melted, aes(Var1, Var2, fill = value)) +
+  geom_tile() + # This creates the heatmap squares
+  scale_fill_gradient2(low = "blue", high = "red", mid = "white", 
+                       midpoint = 0, limit = c(-1,1), space = "Lab", 
+                       name="Correlation") +
+  geom_text(aes(label = sprintf("%.2f", value)), color = "black", size = 3) +
+  theme_minimal() + # Clean theme
+  theme(axis.text.x = element_text(angle = 45, hjust = 1), # Rotate x axis labels
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank())
+
+# Print the heatmap
+print(heatmap)
+
+```
+
+# normality check
+```{r}
+check_normality <- function(data, var) {
+  test_result <- lillie.test(data[[var]])
+  is_normal <- if (test_result$p.value < 0.05) "not normal" else "normal ***"
+  cat(var, "has p-value:", test_result$p.value,  "is", is_normal,"\n")
+  return(test_result$p.value)
+}
+
+variables <- names(wine)[1:11]
+for (var in variables) {
+  p_value <- check_normality(wine, var)
+}
+```
+
+
+```{r}
+# variables <- names(wine[,c(1,2,4,5)])
+# for (var in variables) {
+#   hist(wine[[var]], main=paste("Histogram of", var), xlab=var, col="lightblue", border="black")
+#   # Adds a normal curve for reference
+#   mean_val <- mean(wine[[var]], na.rm = TRUE)
+#   sd_val <- sd(wine[[var]], na.rm = TRUE)
+#   curve(dnorm(x, mean=mean_val, sd=sd_val), add=TRUE, col="red")
+# }
+
+```
+
+## boxcox transformation
+```{r}
+apply_boxcox_save_check <- function(data, var) {
+  if (any(data[[var]] <= 0)) {
+    offset <- abs(min(data[[var]], na.rm = TRUE)) + 1
+    data[[var]] <- data[[var]] + offset
+  }
+  
+  bc_transform <- boxcox(data[[var]] ~ 1, lambda = seq(-5, 5, by = 0.1))
+  lambda_optimal <- bc_transform$x[which.max(bc_transform$y)]
+  
+  if (lambda_optimal != 0) {
+    transformed_var <- (data[[var]]^lambda_optimal - 1) / lambda_optimal
+  } else {
+    transformed_var <- log(data[[var]])  # Use log transformation when lambda is zero
+  }
+  
+  test_result <- shapiro.test(transformed_var)
+  normality_status <- if (test_result$p.value < 0.05) "not normal" else "normal"
+  
+  if (normality_status == "normal") {
+    data[[var]] <- transformed_var
+  }
+  
+  cat("P-value:", test_result$p.value, var, "with λ =", lambda_optimal, normality_status, "\n")
+  
+  return(data)
+}
+
+variables <- names(wine[, c(1, 2, 4, 5)])
+wine1 <- wine  # Initialize wine1 as a copy of wine
+
+for (var in variables) {
+  wine1 <- apply_boxcox_save_check(wine1, var)
+  cat("\n")
+}
+```
+```{r}
+check_normality <- function(data, var) {
+  test_result <- lillie.test(data[[var]])
+  is_normal <- if (test_result$p.value < 0.05) "not normal" else "normal ***"
+  cat(var, "has p-value:", test_result$p.value,  "is", is_normal,"\n")
+  return(test_result$p.value)
+}
+
+variables <- names(wine1)[1:11]
+for (var in variables) {
+  p_value <- check_normality(wine1, var)
+}
+write.csv(wine1, "wine1.csv", row.names = FALSE)
+```
+
+
+## other tranformation
+```{r}
+# # Function to apply various transformations and check normality
+# transform_check_normality <- function(data, var) {
+#   
+#   if (any(data[[var]] <= 0)) {
+#     # Add 1 to all elements to make them positive
+#     data[[var]] <- data[[var]] + 1
+#   }
+#   
+#   transformations <- list(
+#     "log" = log(data[[var]]),
+#     "sqrt" = sqrt(data[[var]]),
+#     "inverse" = 1 / data[[var]],
+#     "exp" = exp(data[[var]]),
+#     "rank" = rank(data[[var]]) 
+#   )
+#   
+#   results <- sapply(transformations, function(x) {
+#     if (any(is.na(x))) return(c(p_value = NA, is_normal = NA))
+#     test_result <- shapiro.test(x)
+#     return(c(p_value = test_result$p.value, is_normal = ifelse(test_result$p.value < 0.05, "not normal", "normal")))
+#   })
+#   
+#   return(results)
+# }
+# 
+# 
+# variables <- names(wine[,c(1,2,4,5)])
+# results_list <- list()
+# for (var in variables) {
+#     result <- transform_check_normality(wine, var) 
+#     results_list[[var]] <- result  
+# }
+# 
+# print(results_list)
+
+```
+# Check for multivariate normality
+
+# Models
+
+## a. Data Reduction or Structural Simplification (Jarrad)
+### PCA
+### FA
+
+## b. Grouping or Discrimination
+### Test the equality of covariance matrices (red vs white)
+```{r echo=FALSE, results='hide', warning=FALSE, message=FALSE}
+g = 2
+p = 11
+
+Sp = matrix(0, nrow = p, ncol = p)
+S = list()
+X_mean = list()
+total_df = 0
+total_inv_df = 0
+wt_sum_logdet_cov = 0
+
+for (i in 1:g) {
+  if (g==1){group_data = red_wine[,c(-12, -13)]}
+  if (g==2){group_data = white_wine[,c(-12, -13)]}
+  
+  m = dim(group_data)[1]
+  X_mean[[i]] = colMeans(group_data)
+  S[[i]] = cov(group_data)
+  
+  total_df = total_df + (m - 1)
+  total_inv_df = total_inv_df + 1 / (m - 1)
+  
+  Sp = Sp + (m - 1) * S[[i]]
+  wt_sum_logdet_cov = wt_sum_logdet_cov + (m - 1) * log(det(S[[i]]))
+}
+
+Sp = Sp / total_df
+M = total_df * log(det(Sp)) - wt_sum_logdet_cov
+u = (total_inv_df - 1 / total_df) * ((2 * p^2 + 3 * p - 1) / (6 * (p + 1) * (g - 1)))
+
+C_obs = (1 - u) * M
+nu = p * (p + 1) * (g - 1) / 2
+p_value = 1 - pchisq(C_obs, df = nu)
+
+if (p_value < 0.05){
+  print(c("p-value =", p_value, "The covariance matrices are not equal"))
+} else {
+  print(c("p-value =", p_value, " The covariance matrices are equal"))
+}
+
+```
+We will now try to find a way to classify our wines between red and white based on their chemical properties and composition and on their quality score.
+
+To chose between a linear or quadratic discriminant analysis approach (lda or qda), we started by checking if the covariance matrices for each groupe (\textit{red} or \textit{white}) were equal. To do so, we performed the following test: $H_0$: $\sum_{white.wine} = \sum_{red.wine}$ against $H_1$: $\sum_{white.wine} \neq \sum_{red.wine}$.
+Define the Box's M test statistic $M =-2ln(\Lambda) $ (where $\Lambda$ is the likelihood ration test statistics) and $u = [ \sum_{l=1}^{g}\frac{1}{n_l - 1} -\frac{1}{\sum_{l=1}^{2} (n_l - 1)}][\frac{2p^2+3p-1}{6(p+1)(g-1)}]$ where p=11 (number of predictors) and g = 2 (number of classes), we know that $(1-u)M\overset{H_0}{\sim}\chi_{p(p+1)(g-1)/2}^2 = \chi_{66}^2 $ is our test statistic.
+The resulting p-value is 1, thus, we fail to reject $H_0$: the data does not provide evidence going against the equality of the means (with confidence level higher than 95\%). Therefore, a lda model would be more appropriate in this situation. 
+
+### LDA 
+```{r echo=FALSE, results='hide', warning=FALSE, message=FALSE}
+winedata$wine_type <- as.factor(ifelse(winedata$wine_type == "red", 1, 0))
+levels(winedata$wine_type)
+t = nrow(winedata)*0.8 #train sample size
+test_ind = sample(nrow(winedata), t) #test indices
+
+wine_train <- winedata[test_ind, ]
+
+wine_validation <- winedata[-test_ind, ]
+
+```
+wine_type is a binary variable and, for analysis purpose, we code wine_type as follows: red = 1, white = 0. This conversion is made within the dataset before fitting the model.
+Moreover, to evaluate the performance of our model, we selected a random sample containing 80\% of the wine data that will be used as a training set (wine_train) and the other 20\% will be used as a validation set (wine_validation). This will allow us to use cross validation. 
+Because we only need quantitative data for these analysis, we will not consider \textit{quality} as a predictor.
+```{r}
+
+lda.wine = lda(wine_type ~.,data=wine_train[,c(-12)], CV = T)
+cross_tab = table(wine_train$wine_type,lda.wine$class)
+diag(prop.table(cross_tab,1))
+sum(diag(prop.table(cross_tab)))
+```
+After building the model, we want to evaluate its performance in two ways. 
+First, we want to check that it performs well in predicting the data that have been used to build it (wine_train). When generating the cross validation matrix, we can see that more than 99\% of white wines and more than 98\% of red wines were correctly classified. On average, more than 99\% of all predictions were correct.
+Even though these results are very high, we might fear that such good results could be due to overfitting ; that is the reason why we also need to check its performance on the validation set. 
+
+```{r echo=FALSE, results='hide', warning=FALSE, message=FALSE}
+lda.wine = lda(wine_type ~.,data=wine_train[,c(-12)]);
+lda_pred = predict(lda.wine, wine_validation)
+cross_tab = table(wine_validation$wine_type,lda_pred$class)
+diag(prop.table(cross_tab,1))
+sum(diag(prop.table(cross_tab)))
+
+```
+Surprisingly, on new data, the lda model performs even better. More than 99\% of the predictions made on both red and white wines are correct and, thus, on average, almost all predictions are also correct.
+
+### QDA 
+
+```{r echo=FALSE, results='hide', warning=FALSE, message=FALSE}
+
+qda.wine = qda(wine_type ~.,data=wine_train[,c(-12)], CV = T);
+
+cross_tab = table(wine_train$wine_type,qda.wine$class)
+diag(prop.table(cross_tab,1))
+sum(diag(prop.table(cross_tab)))
+
+qda.wine = qda(wine_type ~.,data=wine_train[,c(-12)]);
+
+qda_pred = predict(qda.wine, wine_validation)
+cross_tab = table(wine_validation$wine_type,qda_pred$class)
+diag(prop.table(cross_tab,1))
+sum(diag(prop.table(cross_tab)))
+```
+Even though the linear separation was very satisfying and seemed to be the most appropriate, we might want to check if a quadratic discriminant analysis would also be able to capture the limit between the two categories. 
+
+The performance are still very good: between 98 and 99\% of the predictions are correct on both white and red wines, when the predictions are made on the training dataset and it goes over 99\% with red wine, when the validation set is used.
+On average, the qda model is correct 98\% of the time. This is a highly satisfying result too.
+
+Since we have to make a choice between the two, however, we will select the lda model: not only does it performs better (even though the difference is not substancial), it is also simpler and more appropriate with the data. Indeed, we showed that the red_wine and white_wine covariance matrices, which is also a sign that the lda model is a better choice. 
+
+### Cluster Analysis (Jiali)
+
+
+## c. Dependence Investigation (Jiali)
+### Correlation Analysis
+### Canonical Correlation Analysis (chapter 10)
+
+## d. Prediction or classification 
+## Logistic regression
+```{r echo=FALSE, results='hide', warning=FALSE, message=FALSE}
+
+winedata <- rbind(red_wine, white_wine)
+
+winedata$wine_type <- ifelse(winedata$wine_type == "red", 1, 0)
+winedata$wine_type <- as.factor(winedata$wine_type)
+
+lg.wine_type = glm(wine_type ~ volatile.acidity + citric.acid 
+             + residual.sugar + chlorides + free.sulfur.dioxide + 
+               total.sulfur.dioxide + density + sulphates + alcohol 
+             + quality, family = binomial(link ="logit"), data = winedata)
+lg.wine_type = glm(wine_type ~ ., family = binomial(link ="logit"), data = winedata)
+summary(lg.wine_type)
+
+
+```
+As previously stated, wine_type is a categorical variable, which can take the two following values: white or red. 
+In order to predict the type of a certain wine based on its chemical composition and properties, we fit a logistic regression model. It is appropriate since wine_type is a binary variable. Because the result of such a model implicitly depends on a probability score, which will be rounded to the closest between 0 and 1, we coded wine_type as follows: red = 1, white = 0. This conversion was made within the dataset before fitting the model.
+$$ $$
+We have no previously held knowledge or method that would have permitted us to identify which variables were the most influencial in this situation. Therefore, we first fitted a model that contained all possible predictors. The Student tests performed on each of their associated coefficients indicated that the data showed no evidence that the ones associated to \textit{pH} and \textit{fixed.acidity} would not be zero (their p-values were, respectively, 0.1689 and 0.0861, which is higher than 0.05). This implies that these variables do not have a significant impact on the outcome, with 95\% confidence ; thus, they could easily be removed from the model. However, these tests are performed individually for each coefficients, hence, we cannot remove both of them at once, since their impact could be changed by the absence of the other. The p-value for the coefficient associated to \textit{pH} was higher, indicating a lower significance, therefore, it is the one that we chose to remove first.
+When the second model was fitted (with all possible predictors but \textit{pH}), fixed.acidity was still not significant (for its coefficient, the Student test's p-value was 0.2985>0.05). We then removed it and fitted a new model without \textit{pH} nor \textit{fixed.acidity}.
+
+Now, note $f(X) = -1645 + 7.10X_2 - 2.83 X_3 - 0.871 X_4 + 24.3 X_5 + 0.0586 X_6 - 0.0522 X_7 + 1636 X_8 + 3.06 X_{10} + 1.56 X{11} + 0.410 X_{12}$. We are trying to predict $Y = X_{13}$, thus, our final model is:
+$Y = \mathbb{1}_{f(X)>0.5}$.
+
+### Multivariate Regression
+```{r echo=FALSE, results='hide', warning=FALSE, message=FALSE}
+wine.quant = winedata[,c(-13)]
+
+#BIC backward model selection
+step(lm(quality ~ ., data = wine.quant), direction = "backward",
+     k=log(nrow(wine.quant)))
+
+#fit the selected model
+fit.wine = lm(formula = quality ~ fixed.acidity + volatile.acidity + residual.sugar + 
+    free.sulfur.dioxide + total.sulfur.dioxide + density + pH + 
+    sulphates + alcohol, data = wine.quant)
+summary(fit.wine)
+```
+We now want to fit a model to predict a wine's quality score $X_{12}$ based on its chemicals properties and composition.
+Quality is, in essence a qualitative variable, since it can only take integer values between 0 and 10. However, the range is large enough so we can consider it quantitative. When it comes to prediction, it would even allow for fraction of points, which would be useful in prediction: wine producers would be able to know how far they are from a certain score whereas consumers would know if a wine is in lower or higher range of the said score. 
+
+Considering quality as a qualitative variable is also practical for us to chose a model to fit to our data. Indeed, we will try to predict \textit{quality} with multivariate regression. Since we want the predictors to be only quantitative as well, we removed \textit{wine_type} upfront, since it is binary. Then, we will use the BOC model selection algorithm in order to remove insignificant predictors and select the ones that would maximize the likelihood function associated to $X_{13}$. The BIC penalizes large models, to avoid the risk of overparametrization, which is also useful in our case, since we have 13 parameters.
+This time, we want to predict  $Y = X_{12}$
+In the end, the chosen model is $Y = 60 + 0.066 X_1 -1.30 X_2 + 0.045 X_4 + 0.0059 X_6 - 0.0025 X_7 - 0.59 X_8+ 0.48 X_9 + 0.74 X_{10} + 0.26 X_{11}$.
+
+After displaying the summary for this model, we confirm that all parameters are indeed significant at level 95\% (from the Student tests) and that, overall, it demonstrate strong performance compared to a constant model (small Fisher test p-value). The adjusted R-squared, however, is low (only 0.2906). We tried improving the model by adding or removing parameters, but we were never able to improve this indicator. 
+
+
+## e. Hypothesis construction and testing (Jarrad)
+### one-way MANOVA
+
+
+
+
+```{r}
+
+```
+
