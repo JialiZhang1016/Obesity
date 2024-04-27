@@ -1,0 +1,363 @@
+---
+title: "Untitled"
+author: "Jarrad Botchway"
+date: "2024-04-27"
+output: html_document
+---
+
+```{r}
+library(ggplot2)
+library(reshape2)
+library(MASS)
+library(nortest)
+
+set.seed(42) 
+
+```
+
+# read data 2.0
+```{r}
+wine2 <- read.csv("wine2.csv")
+winequant <- read.csv("winequant.csv")
+```
+
+
+# Categorical data visualization
+```{r}
+# Get the frequency table
+quality_table <- table(wine2$quality)
+type_table <- table(wine2$wine_type)
+
+# View the frequency table
+print(quality_table)
+print(type_table)
+
+
+# barplot
+wine2$quality <- factor(wine2$quality)
+ggplot(wine2, aes(x = quality)) + geom_bar(fill = "skyblue") + 
+  labs(x = "quality", y = "count")
+
+wine2$wine_type <- factor(wine2$wine_type)
+ggplot(wine2, aes(x = wine_type)) + geom_bar(fill = "skyblue") + 
+  labs(x = "type of wine", y = "count")
+```
+
+#### Summary:
+White wine is the most common wine type recorded. In terms of wine quality, grades 5, 6 and 7 are the most common. They make up more than half of the data
+
+# Quantitative data visualization 
+
+```{r}
+summary(wine2[,1:11])
+```
+
+## histogram
+```{r}
+ggplot(wine2, aes(x = fixed.acidity)) +
+  geom_histogram(color = "white", fill = "skyblue") +
+  labs(x = "fixed acidity", y = "count") + theme_minimal()
+
+ggplot(wine2, aes(x = volatile.acidity)) +
+  geom_histogram(color = "white", fill = "skyblue") +
+  labs(x = "volatile acidity", y = "count") + theme_minimal()
+
+ggplot(wine2, aes(x = citric.acid)) +
+  geom_histogram(color = "white", fill = "skyblue") +
+  labs(x = "citric acid", y = "count") + theme_minimal()
+
+ggplot(wine2, aes(x = residual.sugar)) +
+  geom_histogram(color = "white", fill = "skyblue") +
+  labs(x = "residual sugar", y = "count") + theme_minimal()
+
+ggplot(wine2, aes(x = chlorides)) +
+  geom_histogram(color = "white", fill = "skyblue") +
+  labs(x = "chlorides", y = "count") + theme_minimal()
+
+ggplot(wine2, aes(x = free.sulfur.dioxide)) +
+  geom_histogram(color = "white", fill = "skyblue") +
+  labs(x = "free sulfur dioxide", y = "count") + theme_minimal()
+
+ggplot(wine2, aes(x = total.sulfur.dioxide)) +
+  geom_histogram(color = "white", fill = "skyblue") +
+  labs(x = "total sulfur dioxide", y = "count") + theme_minimal()
+
+ggplot(wine2, aes(x = density)) +
+  geom_histogram(color = "white", fill = "skyblue") +
+  labs(x = " ", y = "count") + theme_minimal()
+
+ggplot(wine2, aes(x = density)) +
+  geom_histogram(color = "white", fill = "skyblue") +
+  labs(x = "density", y = "count") + theme_minimal()
+
+ggplot(wine2, aes(x = pH)) +
+  geom_histogram(color = "white", fill = "skyblue") +
+  labs(x = "pH", y = "count") + theme_minimal()
+
+ggplot(wine2, aes(x = sulphates)) +
+  geom_histogram(color = "white", fill = "skyblue") +
+  labs(x = "sulphates", y = "count") + theme_minimal()
+
+ggplot(wine2, aes(x = alcohol)) +
+  geom_histogram(color = "white", fill = "skyblue") +
+  labs(x = "alcohol", y = "count") + theme_minimal()
+```
+
+## boxplot
+```{r}
+ggplot(wine2, aes(x = fixed.acidity)) + geom_boxplot() +
+  labs(title = "Box Plot of fixed acidity", x = "fixed acidity") +
+  theme_minimal()
+
+ggplot(wine2, aes(x = volatile.acidity)) + geom_boxplot() +
+  labs(title = "Box Plot of volatile.acidity", x = "volatile.acidity") + theme_minimal()
+
+ggplot(wine2, aes(x = citric.acid)) + geom_boxplot() +
+  labs(title = "Box Plot of citric.acid", x = "citric.acid") + theme_minimal()
+
+ggplot(wine2, aes(x = residual.sugar)) + geom_boxplot() +
+  labs(title = "Box Plot of residual.sugar", x = "residual.sugar") + theme_minimal()
+
+ggplot(wine2, aes(x = chlorides)) + geom_boxplot() +
+  labs(title = "Box Plot of chlorides", x = "chlorides") + theme_minimal()
+
+ggplot(wine2, aes(x = free.sulfur.dioxide)) + geom_boxplot() +
+  labs(title = "Box Plot of free.sulfur.dioxide", x = "free.sulfur.dioxide") + theme_minimal()
+
+ggplot(wine2, aes(x = total.sulfur.dioxide)) + geom_boxplot() +
+  labs(title = "Box Plot of total sulfur dioxide", x = "total.sulfur.dioxide") + theme_minimal()
+
+ggplot(wine2, aes(x = density)) + geom_boxplot() +
+  labs(title = "Box Plot of density", x = "density") + theme_minimal()
+
+ggplot(wine2, aes(x = pH)) + geom_boxplot() +
+  labs(title = "Box Plot of pH", x = "pH") + theme_minimal()
+
+ggplot(wine2, aes(x = sulphates)) + geom_boxplot() +
+  labs(title = "Box Plot of sulphates", x = "sulphates") + theme_minimal()
+
+ggplot(wine2, aes(x = alcohol)) + geom_boxplot() +
+  labs(title = "Box Plot of alcohol", x = "alcohol") + theme_minimal()
+```
+
+### Summary
+The histograms fixed acidity, volatile acidity and citric acid all reveal that they are unimodal whereas their corresponding boxplot further show that they are right skewed. 
+
+Histograms for free sulphur dioxide and total sulphur dioxide reveals that these are unimodal and have bell-curved shapes. Their corresponding boxplots show they have some few outliers. Free suphur dioxide has first and third quarter values of 17 and 41 with a maximum value of 289. Meanwhile, total sulphur oxide has first and third quarters of 77 and 156 with a maximum value of 440.
+
+Alcohol, sulphates, density and pH seem to be fairly bell shaped as well. Finally, chlorides and residual sugar seem right skewed according to their histograms and boxplots.
+
+# correlation matrix
+```{r}
+subset_winedata <- wine2[, 1:11]
+cor_matrix <- cor(subset_winedata)
+
+# Melt the correlation matrix for ggplot2
+cor_melted <- melt(cor_matrix)
+
+# Create the heatmap
+heatmap <- ggplot(cor_melted, aes(Var1, Var2, fill = value)) +
+  geom_tile() + # This creates the heatmap squares
+  scale_fill_gradient2(low = "blue", high = "red", mid = "white", 
+                       midpoint = 0, limit = c(-1,1), space = "Lab", 
+                       name="Correlation") +
+  geom_text(aes(label = sprintf("%.2f", value)), color = "black", size = 3) +
+  theme_minimal() + # Clean theme
+  theme(axis.text.x = element_text(angle = 45, hjust = 1), # Rotate x axis labels
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank())
+
+# Print the heatmap
+print(heatmap)
+```
+
+Total sulphur dioxide and free sulphur dioxide show a very strong positive correlation of 0.72. Alcohol and density show strong negative correlation of 0.69. Density and residual sugar also show strong correlation.
+
+
+```{r}
+test_types <- c("Wilks", "Hotelling-Lawley", "Roy", "Pillai")
+
+response <- c("fixed.acidity", "volatile.acidity", "citric.acid",
+              "residual.sugar", "chlorides", "free.sulfur.dioxide", 
+              "total.sulfur.dioxide", "density", "pH", "sulphates",
+              "alcohol")
+```
+
+In our analysis, we explore the impact of two key factors—wine quality and wine type—on our dataset. Wine quality comprises seven distinct populations, while wine type encompasses two populations. Initially, we conduct individual one-way MANOVA analyses for each factor, followed by a comprehensive examination using two-way MANOVA, incorporating both variables simultaneously. 
+
+Our investigation employs the entirety of the 11 features available in our dataset as response variables. At each stage of our analysis, we rigorously assess significance levels at $5\%$, ensuring robustness and reliability in our findings.
+
+```{r}
+fit <- manova(cbind(fixed.acidity,volatile.acidity,
+                    citric.acid, residual.sugar,
+                    chlorides, free.sulfur.dioxide,
+                    total.sulfur.dioxide, density, pH,
+                    sulphates, alcohol) ~ wine_type, data = wine2);
+
+for(test_type in test_types) {
+  cat("Summary for test type:", test_type, "\n")
+  print(summary(fit, test = test_type))
+  cat("\n")
+}
+```
+
+In our one-way MANOVA analysis, we aimed to discern whether there exists statistically significant evidence indicating variations in all 11 mean responses between the two distinct wine populations: red and white wines. Consequently, our null hypothesis posited that these two wine type populations exhibit no variance.
+
+Our investigation utilized four different tests—Wilks, Hotelling-Lawley, Roy, and Pillai—to evaluate the hypothesis. Remarkably, all four tests yielded an identical p-value of $2.2×10^{-16}$. This uniformity in results is unsurprising, given our focus on only two populations in this context.
+
+Therefore, based on our findings, we confidently assert that at least one of the 11 mean responses under consideration differs significantly between the two wine populations examined.
+
+```{r}
+for(var in response) {
+  fit <- aov(formula(paste(var, "~ wine_type")), data = wine2)
+  cat("Summary when response is", var, "\n")
+  print(summary(fit))
+}
+```
+
+Following our initial findings, we conducted further investigation to identify which of the 11 response variables contributed to the observed differences between the two wine populations. To accomplish this, we performed individual univariate analyses for each response variable, utilizing the Pillai test.
+
+Remarkably, all 11 tests yielded significant results, indicating substantial differences across the various response variables. Notably, while the p-value for alcohol slightly deviated $(0.00787)$, all other tests produced a consistent p-value of $2×10^{-16}$.
+
+In light of these outcomes, we confidently conclude that each mean response significantly varies between the two wine populations, underscoring the diverse characteristics and attributes associated with red and white wines.
+
+```{r}
+# one-way MANOVA
+fit <- manova(cbind(fixed.acidity,volatile.acidity,
+                    citric.acid, residual.sugar,
+                    chlorides, free.sulfur.dioxide,
+                    total.sulfur.dioxide, density, pH,
+                    sulphates, alcohol) ~ factor(quality), data = wine2)
+
+for(test_type in test_types) {
+  cat("Summary for test type:", test_type, "\n")
+  print(summary(fit, test = test_type))
+  cat("\n")
+}
+
+```
+
+In our subsequent analysis, we conducted a one-way MANOVA considering all 11 response variables collectively, with wine quality serving as the primary factor. Our null hypothesis posited that the seven wine quality populations exhibit no variation.
+
+Upon evaluation using four different tests—Wilks, Hotelling-Lawley, Roy, and Pillai—we obtained significant results, with a p-value of $2.2×10^{-6}$ across all tests. This consistent significance underscores the presence of substantial differences among the wine quality populations in terms of the mean responses for at least one of the 11 variables examined.
+
+In light of these findings, we assert that there exists variability in the mean responses across the wine quality populations, highlighting the diverse characteristics and attributes associated with different wine quality levels.
+
+
+```{r}
+for(var in response) {
+  fit <- aov(formula(paste(var, "~ factor(quality)")), data = wine2)
+  cat("Summary when response is", var, "\n")
+  print(summary(fit))
+}
+```
+
+Continuing our analysis, we conducted univariate one-way MANOVA tests to investigate the specific differences detected in the previous step. Out of the 11 response variables examined, all but one yielded significant results. Notably, for the response variable pH, we did not obtain significant evidence to conclude that at least one of the wine quality populations differs from the rest, with a p-value of $0.0593$.
+
+This observation suggests that while the majority of response variables exhibit significant variations across the wine quality populations, pH does not demonstrate such differences at a statistically significant level. However, it's essential to interpret this result cautiously, considering its proximity to the conventional significance threshold $(\alpha = 0.05)$. Further exploration or additional analyses may be warranted to fully elucidate the role of pH in distinguishing among wine quality populations.
+
+```{r}
+# Two-way MANOVA
+
+fit <- manova(cbind(fixed.acidity,volatile.acidity,
+                    citric.acid, residual.sugar,
+                    chlorides, free.sulfur.dioxide,
+                    total.sulfur.dioxide, density, pH,
+                    sulphates, alcohol) ~ factor(quality)*wine_type, 
+              data =wine2)
+summary(fit) 
+```
+
+In our subsequent analysis, we explored the interaction between two key factors, wine type and wine quality, using a two-way MANOVA approach. Employing the Pillai test, our analysis revealed a significant interaction effect between these factors.
+
+The obtained p-value of $2.2×10^{-16}$ indicates strong evidence of interactive effects between wine type and wine quality on the mean response of at least one of the 11 variables examined. This suggests that both wine type and wine quality play crucial roles in influencing the characteristics and attributes represented by these variables, and their combined effects contribute to the overall variability observed in the dataset.
+
+In conclusion, our findings underscore the importance of considering both wine type and wine quality concurrently, as they jointly impact the mean responses of the variables under investigation in an interactive manner.
+
+```{r}
+# univariate two-way ANOVA
+for(var in response) {
+  fit <- aov(formula(paste(var, "~ wine_type*factor(quality)")), data = wine2)
+  cat("Summary when response is", var, "\n")
+  print(summary(fit))
+}
+```
+
+Following the identification of a significant interaction between wine type and wine quality, we proceeded to conduct univariate two-way MANOVA tests to examine whether this interaction effect manifests consistently across all response variables.
+
+Our analyses revealed that for each of the 11 response variables, except for chlorides (p-value 0.106) and alcohol (p-value 0.56262), significant interaction effects were observed. This indicates that the joint influence of wine type and wine quality varies across most response variables, contributing to the overall variability in the dataset.
+
+In the cases of chlorides and alcohol, however, we found no statistically significant evidence to support the presence of interaction effects. Instead, our results suggest that each factor independently affects the mean responses in an additive manner.
+
+In summary, while the interaction between wine type and wine quality significantly impacts most response variables, the effects may differ across individual variables. Nonetheless, the independent effects of each factor remain discernible in certain cases, emphasizing the complexity of their combined influence on the characteristics of the dataset.
+
+```{r}
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# PCA
+
+### Using the correlation matrix
+pca_result = princomp(winequant, cor = TRUE);
+summary(pca_result);
+loadings(pca_result);
+plot(pca_result,main="Scree Plot",type="lines",col="red")
+
+### Using covariance matrix
+pca_result = princomp(winequant);
+summary(pca_result);
+loadings(pca_result);
+plot(pca_result,main="Scree Plot",type="lines",col="blue")
+
+### finding the coef of the first principal component
+S <- cov(winequant)
+eig_decomp <- eigen(S)
+eigenvectors <- eig_decomp$vectors
+print(eigenvectors[,1])
+```
+
+In our analysis, we turn to Principal Component Analysis (PCA) as a means to interpret our dataset more effectively by reducing its dimensionality while preserving as much variation as possible. We set a pre-defined cutoff of $90\%$ variation explained to guide our approach selection.
+
+PCA based on the correlation matrix revealed that the first principal component accounts for only 9% of the total sample variation, necessitating the inclusion of the first 7 principal components to explain $90\%$ of the total variance. While this is a substantial proportion, the significant number of principal components required indicates limited reduction in dimensionality. Alternatively, examination of the scree plot suggests a somewhat sharp drop at component 4. However, the first 4 principal components only explain $36\%$ of the total variation, which is suboptimal.
+
+Conversely, PCA based on the covariance matrix demonstrated that the first principal component explains a remarkable 95% of the total sample variance. Consistent with this finding, the scree plot reveals a clear elbow at component 1, indicating that further components contribute minimally to the total variance. Therefore, the first principal component alone can effectively replace the original 11 features.
+
+To interpret the first principal component, we examine its loadings, representing the correlations between the original features and the principal component. The formula suggests that the first principal component primarily reflects the combined influence of free sulfur dioxide and total sulfur dioxide, with a negative association with both features.
+
+However, it's essential to note that results obtained from the covariance matrix may be misleading, as features with larger values disproportionately influence the analysis. Therefore, we opt for the PCA derived from the correlation matrix for its more balanced representation.
+
+In conclusion, PCA based on the correlation matrix offers a more insightful interpretation of our dataset, facilitating a meaningful reduction in dimensionality and providing valuable insights into the underlying relationships among the features.
+
+
+```{r}
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Factor Analysis : describing, if possible, the cov relationships
+# among the features, using a few unobservable, random quantities (factors)
+
+library('psych')
+
+# ML solution of the factor model
+fit <- fa(winequant, nfactors = 2, rotate = "none", 
+                   fm = "ml", residuals = TRUE)
+fit
+fit$loadings
+residuals(fit)
+
+# principal component solution of the factor model
+fit <- principal(winequant, nfactors = 2, rotate = "none", residuals = TRUE)
+fit
+fit$loadings
+residuals(fit)
+```
+
+In our investigation of highly correlated features within our dataset, we sought to uncover potential latent factors underlying these correlations. With 11 features, our covariance matrix contains 66 unique entries. Considering a factor model with 2 latent factors, we can reduce the dimensionality of our analysis to 33 parameters, effectively simplifying the interpretation of our data.
+
+Using two-factor models derived from principal component analysis (PCA) and maximum likelihood (ML) methods, we examined the factor loadings to identify the latent features associated with our variables. Applying a cutoff of 0.5 for correlation strength, we gained insights into the relationships between the factors and features.
+
+From the PCA-based factor analysis:
+- Factor 1 is strongly correlated with volatile acidity (0.663), residual sugar (-0.602), free sulfur dioxide (-0.750), total sulfur dioxide (-0.848), and sulphates (0.512). This latent feature primarily captures variations in these variables.
+- Factor 2 exhibits strong correlations with fixed acidity (0.531), residual sugar (0.521), density (0.922), and alcohol (-0.734), indicating its association with these variables.
+
+Similarly, from the ML-based factor analysis:
+- Factor 1 shows strong correlations with residual sugar (0.553), density (0.998), and alcohol (-0.688), suggesting that this latent feature primarily represents variations in these variables.
+- Factor 2 is strongly correlated with volatile acidity (-0.509), residual sugar (0.568), free sulfur dioxide (-0.76), and total sulfur dioxide (-0.888), indicating its association with these variables.
+
+In both methods, the residuals are comparable and produce smaller values, indicating satisfactory model fit. Therefore, we can confidently consider the results obtained from either method in this case, facilitating a deeper understanding of the underlying factors driving the correlations among our features.
